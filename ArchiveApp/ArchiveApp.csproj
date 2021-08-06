@@ -37,10 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -54,9 +50,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MVVM_Core">
-      <HintPath>..\..\..\..\..\Библиотеки\MVVM_Core\bin\Debug\MVVM_Core.dll</HintPath>
+    <Reference Include="CustomControls">
+      <HintPath>..\..\..\WindowsFormsApp1\CustomControls\bin\Debug\CustomControls.dll</HintPath>
     </Reference>
+    <Reference Include="MVVM_Core">
+      <HintPath>..\..\..\..\..\..\Библиотеки\MVVM_Core\bin\Debug\MVVM_Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\Components\" />
   </ItemGroup>
 
 </Project>

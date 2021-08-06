@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="Resources/Xaml/GeneralStyles.xaml"/>
                 <ResourceDictionary Source="Resources/Xaml/ControlsStyles.xaml"/>
                 <ResourceDictionary Source="Resources/Xaml/Converters.xaml"/>
+                <ResourceDictionary Source="Resources/Xaml/Icons.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

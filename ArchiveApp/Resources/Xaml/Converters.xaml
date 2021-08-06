@@ -1,7 +1,14 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:ArchiveApp">
-    <!--<local:ConverterBoolToVisibility x:Key="BoolToVis"/>
+                    xmlns:local="clr-namespace:ArchiveApp.Converters">
+    <local:ConverterBoolToVisibility x:Key="BoolToVis"/>
     <local:ConverterBoolToVisibilityInvert x:Key="BoolToVisInvert"/>
-    <local:ConverterBoolInvert x:Key="BoolInvert"/>-->
+    <local:ConverterBoolInvert x:Key="BoolInvert"/>
+
+    <local:ConverterEducation x:Key="ConvEducation"/>
+    <local:ConverterFamily x:Key="ConvFamilty"/>
+    <local:ConverterGender x:Key="ConvGender"/>
+    <local:ConverterGenderShort x:Key="ConvGenderShort"/>
+    <local:ConverterParty x:Key="ConvGenderParty"/>
+    <local:ConverterSocial x:Key="ConvGenderSocial"/>
 </ResourceDictionary>

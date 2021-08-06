@@ -8,17 +8,16 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace ArchiveApp.Views
 {
     /// <summary>
-    /// Логика взаимодействия для DefaultView.xaml
+    /// Логика взаимодействия для ProtocolWindow.xaml
     /// </summary>
-    public partial class DefaultView : Page
+    public partial class ProtocolWindow : Window
     {
-        public DefaultView()
+        public ProtocolWindow()
         {
             InitializeComponent();
         }

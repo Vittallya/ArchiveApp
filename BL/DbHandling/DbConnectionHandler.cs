@@ -69,8 +69,6 @@ namespace BL
             SqlConnection conn = new SqlConnection(str);
             try
             {
-
-                conn.ConnectionString = str;
                 await conn.OpenAsync();
                 return true;
             }

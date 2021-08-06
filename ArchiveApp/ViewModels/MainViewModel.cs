@@ -6,6 +6,11 @@ using BL;
 using BL.DbHandling;
 using System.Windows.Controls;
 using System.Threading.Tasks;
+using ArchiveApp.Abstract;
+using ArchiveApp.Locators;
+using ArchiveApp.Services;
+using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ArchiveApp.ViewModels
 {
@@ -14,18 +19,37 @@ namespace ArchiveApp.ViewModels
     {
         private readonly DbConnectionHandler db;
         private readonly PageService pageService;
+        private readonly ViewModelFactory factory;
         private readonly AppContextLoader loader;
 
         public MainViewModel(DbConnectionHandler db,
                              PageService pageService,
+                             ViewModelFactory factory,
                              AppContextLoader loader)
         {
             this.db = db;
             this.pageService = pageService;
+            this.factory = factory;
             this.loader = loader;
             pageService.PageChanged += PageService_PageChanged;
+
+            Tables = new Dictionary<string, ICommand>
+            {
+                {"Протоколы", new Command(x => SetupViewModel<ProtocolItemsViewModel>()) }
+            };
+
             Init();            
         }
+
+
+        private void SetupViewModel<TViewModel>() where TViewModel: IDefaultItemsViewModel
+        {
+            factory.SetupItemsViewModel<ProtocolItemsViewModel>();
+            ItemsViewModel = ViewModelLocator.ServiceProvider.GetRequiredService<IDefaultItemsViewModel>();
+            ItemsViewModel.ChangePage();
+        }
+
+        public IDefaultItemsViewModel ItemsViewModel { get; private set; }
 
         public Page CurrentPage { get; private set; }
 
@@ -45,6 +69,8 @@ namespace ArchiveApp.ViewModels
 
         public bool IsAnimVisible { get; private set; }
         public bool IsTextVisible { get; private set; } = true;
+
+        public bool IsSidePanelVisible { get; set; }
 
         private async Task<bool> InitDb()
         {
@@ -73,9 +99,11 @@ namespace ArchiveApp.ViewModels
             return true;
         } 
 
-        private void Init()
+        private async void Init()
         {
-            pageService.ChangePage<Views.DefaultView>(DisappearAndToSlideAnim.Default);
+            await InitDb();
         }
+
+        public Dictionary<string, ICommand> Tables { get; }
     }
 }

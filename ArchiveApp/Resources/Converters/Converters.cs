@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Main.Resources
+namespace ArchiveApp.Converters
 {
     public class ConverterBoolToVisibility : IValueConverter
     {
@@ -168,6 +168,137 @@ namespace Main.Resources
             }
             return TimeSpan.FromMinutes(0);
 
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+
+    public class ConverterSocial : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if(value is Models.SocialStatus soc)
+            {
+                switch (soc)
+                {
+                    case Models.SocialStatus.Worker: return "Рабочий";
+                    case Models.SocialStatus.Peasant: return "Крестьянин";
+                    case Models.SocialStatus.Employee: return "Служащий";
+                }
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+    public class ConverterFamily : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if(value is Models.FamilyStatus f)
+            {
+                switch (f)
+                {
+                    case Models.FamilyStatus.MarriedMale: return "Женат";
+                    case Models.FamilyStatus.MarriedFeemale: return "Замужем";
+                    case Models.FamilyStatus.Widower: return "Вдовец(-ва)";
+                    case Models.FamilyStatus.Divorced: return "Разведен(-а)";
+                }
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+
+    public class ConverterGender : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool gender)
+            {
+
+                if (value == null)
+                {
+                    return "Не определено";
+                }
+                return gender ? "Мужской" : "Женский";
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+
+    public class ConverterGenderShort : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool gender)
+            {
+
+                if (value == null)
+                {
+                    return "Неопр.";
+                }
+                return gender ? "М" : "Ж";
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+    public class ConverterParty : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is Models.PartyStatus p)
+            {
+                switch (p)
+                {
+                    case Models.PartyStatus.None: return "Беспартийный";
+                    case Models.PartyStatus.Member: return "Член партии";
+                    case Models.PartyStatus.Komsomol: return "Комсомол";
+                }
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+
+    public class ConverterEducation : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is Models.EducationKind p)
+            {
+                switch (p)
+                {
+                    case Models.EducationKind.None: return "Без образования";
+                    case Models.EducationKind.Medium: return "Среднее";
+                    case Models.EducationKind.High: return "Высшее";
+                }
+            }
+            return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

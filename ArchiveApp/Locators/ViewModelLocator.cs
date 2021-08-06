@@ -1,4 +1,5 @@
-﻿using ArchiveApp.ViewModels;
+﻿using ArchiveApp.Abstract;
+using ArchiveApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using MVVM_Core;
 using System;
@@ -11,6 +12,8 @@ namespace ArchiveApp.Locators
     {
         private static IServiceProvider _serviceProvider;
 
+        public static IServiceProvider ServiceProvider => _serviceProvider;
+
         public static void SetupServiceProvider(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -18,5 +21,7 @@ namespace ArchiveApp.Locators
 
         public MainViewModel MainViewModel => _serviceProvider.GetRequiredService<MainViewModel>();
         public DisplayGroupViewModel DisplayGroupViewModel => _serviceProvider.GetRequiredService<DisplayGroupViewModel>();
+        public IDefaultItemsViewModel ItemsViewModel => _serviceProvider.GetRequiredService<IDefaultItemsViewModel>();
+
     }
 }

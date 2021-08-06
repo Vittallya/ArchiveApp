@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore.Design;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using BL;
+using ArchiveApp.Services;
+using ArchiveApp.Abstract;
 
 namespace ArchiveApp
 {
@@ -12,7 +14,8 @@ namespace ArchiveApp
     {
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
-            
+            serviceCollection.AddSingleton<ViewModelFactory>();
+
             serviceCollection.AddTransient(x =>
             {
                 var builder = new ConfigurationBuilder();
@@ -27,6 +30,12 @@ namespace ArchiveApp
                 var s = pr.GetService<DbConnectionHandler>();
                 var str = s.ActualConnectionString;
                 opts.UseSqlServer(str);
+            });
+
+            serviceCollection.AddTransient<IDefaultItemsViewModel>(pr =>
+            {
+                var f = pr.GetService<ViewModelFactory>();
+                return f.GetItemsViewModel(pr);
             });
         }
     }
