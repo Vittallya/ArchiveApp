@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,8 +11,8 @@ namespace ArchiveApp.Abstract
 {
     public interface IDefaultItemsViewModel
     {
-        public object Item { get; set; }
-        public ICollectionView Items { get; }
+        public object SelectedItem { get; set; }
+        public ICollectionView ItemsView { get; }
         public bool LoadingAnimation { get; }
 
         public ICommand AddCommand { get; }
@@ -20,6 +21,7 @@ namespace ArchiveApp.Abstract
         public ICommand UpdateCommand { get; }
 
         public ViewBase View { get; }
+        public IList SelectedItems { get; set; }
 
         public void ChangePage();
     }

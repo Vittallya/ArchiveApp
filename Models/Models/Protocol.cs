@@ -9,10 +9,10 @@ namespace Models
     public class Protocol
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public int Id { get; set; }
         public int ProtocolNumber { get; set; }
         public DateTime ProtocolDateTime { get; set; }
-        public byte OrganId { get; set; }
+        public short OrganId { get; set; }
         public Organ Organ { get; set; }  
         public int PeopleId { get; set; }
         public People People { get; set; }        

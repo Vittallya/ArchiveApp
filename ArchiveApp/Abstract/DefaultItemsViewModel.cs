@@ -20,7 +20,7 @@ namespace ArchiveApp.Abstract
     public abstract class DefaultItemsViewModel<T> :BaseViewModel, IDefaultItemsViewModel
         where T: class
     {
-        private readonly AppContext appContext;
+        protected readonly AppContext appContext;
         private readonly PageService pageService;
 
         public DefaultItemsViewModel(AppContext appContext, PageService pageService)
@@ -40,28 +40,26 @@ namespace ArchiveApp.Abstract
             await Reload();
         }
 
-        public object Item { get; set; }
+        public object SelectedItem { get; set; }
 
-        public ICollectionView Items { get; protected set; }
+        public ICollectionView ItemsView { get; protected set; }
+        public ObservableCollection<T> Items { get; protected set; }
 
-        public virtual async Task OnAdd()
+        private async Task Add()
         {
-
+            await OnAdd();
         }
-        public virtual async Task OnEdit()
-        {
 
+        private async Task Edit()
+        {
+            await OnEdit(SelectedItem as T);
         }
         
-        public virtual async Task OnRemove()
+        private async Task Remove()
         {
-
+            await OnRemove(SelectedItems.OfType<T>().ToArray());
         }
 
-        public virtual async Task OnUpdate()
-        {
-
-        }
 
         public bool LoadingAnimation { get; private set; }
 
@@ -70,20 +68,22 @@ namespace ArchiveApp.Abstract
         private ICommand removeCommand;
         private ICommand updateCommand;
 
-        public ICommand AddCommand => addCommand ?? (addCommand = new CommandAsync(async x => await OnAdd()));
+        public ICommand AddCommand => addCommand ?? (addCommand = new CommandAsync(async x => await Add()));
 
-        public ICommand EditCommand => editCommand ?? (editCommand = new CommandAsync(async x => await OnEdit(), y => Item != null));
+        public ICommand EditCommand => editCommand ?? (editCommand = new CommandAsync(async x => await Edit(), y => SelectedItem != null));
 
-        public ICommand RemoveCommand => removeCommand ?? (removeCommand = new CommandAsync(async x => await OnRemove(), y => Item != null));
+        public ICommand RemoveCommand => removeCommand ?? (removeCommand = new CommandAsync(async x => await Remove(), y => SelectedItem != null));
 
-        public ICommand UpdateCommand => updateCommand ?? (updateCommand = new CommandAsync(async x => await OnAdd()));
+        public ICommand UpdateCommand => updateCommand ?? (updateCommand = new CommandAsync(async x => await Reload()));
+
+        public IList SelectedItems { get; set; }
 
         protected async Task Reload()
         {
             LoadingAnimation = true;
             await OnLoadItems(appContext);
-            Items = CollectionViewSource.GetDefaultView(
-                new ObservableCollection<T>(appContext.Set<T>().Local));
+            Items = new ObservableCollection<T>(appContext.Set<T>().Local);
+            ItemsView = CollectionViewSource.GetDefaultView(Items);
 
             LoadingAnimation = false;
         }
@@ -98,10 +98,14 @@ namespace ArchiveApp.Abstract
             pageService.RemovePage<Views.DefaultItemsView>();
             pageService.ChangePage<Views.DefaultItemsView>(DisappearAnimation.Default);
         }
+        
 
         public void ChangePage()
         {
-            OnChangePage(pageService);            
+            OnChangePage(pageService);
         }
+        protected abstract Task OnAdd();
+        protected abstract Task OnEdit(T item);
+        protected abstract Task OnRemove(T[] items);
     }
 }

@@ -58,8 +58,4 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Resources\Components\" />
-  </ItemGroup>
-
 </Project>

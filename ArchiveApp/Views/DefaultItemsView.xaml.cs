@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArchiveApp.Abstract;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -21,6 +22,10 @@ namespace ArchiveApp.Views
         public DefaultItemsView()
         {
             InitializeComponent();
+            if(this.DataContext is IDefaultItemsViewModel vm)
+            {
+                vm.SelectedItems = listView.SelectedItems;
+            }
         }
     }
 }

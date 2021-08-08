@@ -18,7 +18,7 @@ namespace Models
 
             var json = config.Build();
 
-            var str = json.GetConnectionString("DefaultConnection");
+            var str = json.GetConnectionString("AltConnection1");
             var opt = new DbContextOptionsBuilder().UseSqlServer(str);
 
 

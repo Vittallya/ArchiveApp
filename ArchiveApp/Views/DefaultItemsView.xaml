@@ -16,13 +16,14 @@
 
 
         <ListView 
-            SelectedItem="{Binding Item}"
+            x:Name="listView"
+            SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}"            
             SelectionMode="Extended"
             VirtualizingPanel.IsVirtualizing="True"
             VirtualizingPanel.IsContainerVirtualizable="True"
             VirtualizingPanel.CacheLength="5"
             VirtualizingPanel.VirtualizationMode="Recycling"
-            ItemsSource="{Binding Items}"
+            ItemsSource="{Binding ItemsView}"
             FontSize="15"
             View="{Binding View, UpdateSourceTrigger=PropertyChanged}">
 

@@ -24,6 +24,7 @@ namespace Models
 
         [MaxLength(150)]
         public string BirthPlace { get; set; }
+        public DateTime BirthDate { get; set; }
 
         [Column(TypeName = "tinyint")]
         public EducationKind Education { get; set; }

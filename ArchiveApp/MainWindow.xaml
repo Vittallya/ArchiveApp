@@ -228,6 +228,7 @@
 
 
         <Frame 
+            Margin="25 0"
             Grid.Column="1"
             x:Name="content"
             Grid.Row="1" Content="{Binding CurrentPage}" BorderBrush="{x:Null}" NavigationUIVisibility="Hidden"/>
@@ -240,6 +241,7 @@
             TabStripPlacement="Top">
             
             <TabItem 
+                DataContext="{Binding ItemsViewModel}"
                 Background="White"
                 Style="{DynamicResource MenuItemStyle}" Header="Взаимодействие с данными">
 
@@ -263,7 +265,7 @@
 
                     <Button 
                         Padding="10 5" 
-                        Command="{Binding ItemsViewModel.AddCommand, UpdateSourceTrigger=PropertyChanged}"
+                        Command="{Binding AddCommand, UpdateSourceTrigger=PropertyChanged}"
                         Grid.Column="1" >
                         <StackPanel Orientation="Horizontal">
                             <Viewbox Height="20" Stretch="Uniform">
@@ -274,7 +276,7 @@
                     </Button>
                     <Button 
                         Padding="10 5"
-                        Command="{Binding ItemsViewModel.EditCommand}" 
+                        Command="{Binding EditCommand}" 
                         Grid.Column="3">
                         <StackPanel Orientation="Horizontal">
                             <Viewbox Height="20" Stretch="Uniform">
@@ -288,7 +290,7 @@
                     </Button>
                     <Button 
                         Padding="10 5" 
-                        Command="{Binding ItemsViewModel.RemoveCommand}"
+                        Command="{Binding RemoveCommand}"
                         Grid.Column="5" >
                         <StackPanel Orientation="Horizontal">
                             <Viewbox Height="20" Stretch="Uniform">
@@ -303,7 +305,7 @@
                     <Button 
                         Padding="10 5" 
                         Grid.Column="7" 
-                        Command="{Binding ItemsViewModel.UpdateCommand}">
+                        Command="{Binding UpdateCommand}">
                         <StackPanel Orientation="Horizontal">
                             <Viewbox Height="20" Stretch="Uniform">
                                 <Path Fill="Black" Data="{StaticResource GeometryReloadS}"/>
@@ -327,7 +329,9 @@
         </TabControl>
 
 
-        <CheckBox Grid.Column="1" Grid.Row="1" 
+        <CheckBox Grid.Column="1" Grid.Row="0" 
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Left"
                   Visibility="{Binding IsSidePanelVisible, Converter={StaticResource BoolToVisInvert}}"
                   IsChecked="{Binding IsSidePanelVisible}" Content="Показать" />
 

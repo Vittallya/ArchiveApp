@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CustomControls"
              xmlns:c="clr-namespace:ArchiveApp.Converters"
              mc:Ignorable="d"              
              x:Name="tbList">
-    <StackPanel >
+    <StackPanel  
+                    Panel.ZIndex="15">
 
             <TextBox  
                     Text="{Binding ElementName=tbList, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -22,7 +22,8 @@
                 <ListView
                     Visibility="Collapsed"
                     IsTabStop="False"
-                    Focusable="False"    
+                    Focusable="False"  
+                    Panel.ZIndex="15"
                     VirtualizingPanel.CacheLength="5"
                     VirtualizingPanel.IsVirtualizing="True"
                     VirtualizingPanel.VirtualizationMode="Recycling"

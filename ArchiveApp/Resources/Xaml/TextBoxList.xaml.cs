@@ -51,6 +51,10 @@ namespace ArchiveApp.Resources
         public static readonly DependencyProperty DisplayMemberPathProperty = DependencyProperty.Register(
             "DisplayMemberPath", typeof(string), typeof(TextBoxList),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnDisplayMemberChangedStatic));
+
+        public static readonly DependencyProperty IsSearchEnabledProperty = DependencyProperty.Register(
+            "IsSearchEnabled", typeof(bool), typeof(TextBoxList),
+            new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsSearchEnabledChangedStatic));
         #endregion 
         #region Props
         public IEnumerable ItemsSource
@@ -91,6 +95,11 @@ namespace ArchiveApp.Resources
         {
             get => (string)GetValue(TextProperty);
             set => SetValue(TextProperty, value);
+        }
+        public bool IsSearchEnabled
+        {
+            get => (bool)GetValue(IsSearchEnabledProperty);
+            set => SetValue(IsSearchEnabledProperty, value);
         }
         #endregion
 
@@ -210,7 +219,7 @@ namespace ArchiveApp.Resources
 
         void OnFocused()
         {
-            if (displaySource == null)
+            if (displaySource == null || !IsSearchEnabled)
                 return;
 
             if (isPaste)
@@ -247,6 +256,12 @@ namespace ArchiveApp.Resources
             {
                 listView.Visibility = Visibility.Visible;
                 listView.SelectedIndex = 0;
+            }
+            else
+            {
+                SelectedItem = null;
+                SelectedIndex = -1;
+                listView.Visibility = Visibility.Collapsed;
             }
             
         }
@@ -325,5 +340,19 @@ namespace ArchiveApp.Resources
 
         }
 
+        private static void OnIsSearchEnabledChangedStatic(DependencyObject s, DependencyPropertyChangedEventArgs e)
+        {
+            var obj = s as TextBoxList;
+            obj.OnIsSearchEnabledChanged(s, e);
+
+        }
+
+        private void OnIsSearchEnabledChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is bool res && !res)
+            {
+                listView.Visibility = Visibility.Collapsed;
+            }
+        }
     }
 }

@@ -46,7 +46,7 @@ namespace BL
                 root.GetConnectionString("AltConnection3"),
             };
 
-            for (byte i = 0; i <= connections.Length; i++)
+            for (byte i = 0; i < connections.Length; i++)
             {
                 var str = connections[i];
                 if (await CheckConnection(str))
@@ -59,7 +59,7 @@ namespace BL
             }
 
 
-            Message = "Не найден экземляр сервера либо он не включен";
+            Message = "Не найден экземляр сервера, либо он не включен";
             connections = null;
             return false;
         }        
@@ -72,12 +72,17 @@ namespace BL
                 await conn.OpenAsync();
                 return true;
             }
-            catch (SqlException e1) when (e1.Number != -1 && e1.Number != 4060)
+            catch (SqlException ex) when (ex.Number == 4060)
+            {
+                return true;
+            }
+            catch (SqlException e1) when (e1.Number != -1)
             {
                 Message = e1.Message;
                 DetailMessage = e1.InnerException?.Message;
                 return false;
             }
+
             finally
             {
                 await conn.DisposeAsync();
