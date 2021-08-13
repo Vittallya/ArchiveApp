@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Units id="1" name="natio">
+    <Item  key="0" value="Русский"/>
+    <Item  key="1" value="Украинец"/>
+    <Item  key="2" value="Беларус"/>
+    <Item  key="3" value="Узбек"/>
+    <Item  key="4" value="Татжик"/>
+    <Item  key="5" value="Казах"/>
+    <Item  key="6" value="Якут"/>
+    <Item  key="7" value="Азербайджанец"/>
+    <Item  key="8" value="Латыш"/>
+    <Item  key="9" value="Поляк"/>
+    <Item  key="10" value="Кавказец"/>
+  </Units>
+  
+  <Units id="2" name="family">
+    <Item  key="0" value="Женат"/>
+    <Item  key="1" value="Замужем"/>
+    <Item  key="2" value="Разведен(-а)"/>
+    <Item  key="3" value="Вдовец(-ва)"/>
+  </Units>
+  
+  <Units id="3" name="social">
+    <Item  key="0" value="Крестьянин"/>
+    <Item  key="1" value="Рабочий"/>
+    <Item  key="2" value="Служащий"/>
+    
+  </Units>
+  
+  <Units id="4" name="party">
+    <Item  key="0" value="Беспартийный"/>
+    <Item  key="1" value="Член партии"/>
+    <Item  key="2" value="Комсомол"/>
+  </Units>
+  
+  <Units id="5" name="education">
+    <Item  key="0" value="Нет"/>
+    <Item  key="1" value="Среднее"/>
+    <Item  key="2" value="Средне-специальное"/>
+    <Item  key="3" value="Высшее"/>
+  </Units>
+  
+  <Units id="6" name="organs">
+    <Item  key="0" value="Судебная коллегия ОГПУ"/>
+    <Item  key="1" value="Особое Совещание при НКВД"/>
+    <Item  key="2" value="Тройки УНКВД"/>
+    <Item  key="3" value="Тройки при ПП ОГПУ в Казахстане"/>
+    <Item  key="4" value="Особая тройка"/>
+    <Item  key="5" value="Протоколы НКВД и прокурора СССР"/>
+    <Item  key="6" value="Большая тройка НКВД и Прокуратура СССР"/>
+    <Item  key="7" value="Выездная сессии ПП ОГПУ в Казахстане"/>
+    <Item  key="8" value="Другое"/>
+  </Units>
+</Root>

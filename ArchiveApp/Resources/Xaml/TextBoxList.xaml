@@ -9,21 +9,47 @@
     <StackPanel  
                     Panel.ZIndex="15">
 
+
+        <!--<ListBox 
+            SelectedIndex="{Binding ElementName=tbList,Path=SelectedIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedItem="{Binding ElementName=tbList,Path=SelectedItem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedValue="{Binding ElementName=tbList,Path=SelectedValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            SelectedValuePath="{Binding ElementName=tbList,Path=SelectedValuePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            DisplayMemberPath="{Binding ElementName=tbList,Path=DisplayMemberPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            ItemsSource="{Binding ElementName=tbList,Path=ItemsSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            Visibility="Collapsed"/>-->
+        <DockPanel x:Name="dock">
+
+            <ToggleButton HorizontalAlignment="Right"
+                              DockPanel.Dock="Right"                              
+                              IsTabStop="False"
+                          Padding="5 2"
+                              Checked="ToggleButton_Checked"
+                              Unchecked="ToggleButton_Unchecked"
+                              x:Name="toggle">
+                <Viewbox Stretch="Uniform" 
+                         Height="12">
+                    <Path Fill="Black" Data="{StaticResource GeometryEditTriangle}"/>
+                </Viewbox>
+            </ToggleButton>
             <TextBox  
                     Text="{Binding ElementName=tbList, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PreviewKeyDown="tb_PreviewKeyDown"
                     GotFocus="tb_GotFocus"
                     LostFocus="tb_LostFocus"
-                    TextChanged="tb_TextChanged"
+                    
                     Focusable="True"        
                     x:Name="tb"/>
-            <Canvas Background="White" StackPanel.ZIndex="100">
+        </DockPanel>
+            <Canvas Background="White"  StackPanel.ZIndex="100">
 
                 <ListView
                     Visibility="Collapsed"
+                    Width="{Binding ElementName=dock, Path=ActualWidth}"
                     IsTabStop="False"
                     Focusable="False"  
                     Panel.ZIndex="15"
+                     MaxHeight="180"
                     VirtualizingPanel.CacheLength="5"
                     VirtualizingPanel.IsVirtualizing="True"
                     VirtualizingPanel.VirtualizationMode="Recycling"

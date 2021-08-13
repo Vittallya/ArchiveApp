@@ -73,145 +73,18 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="MenuHeaderStyle" TargetType="ContentControl">
-            <Setter Property="FontSize" Value="16"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsTextVisible }" Value="False">
-
-                    <DataTrigger.EnterActions>
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimation 
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            BeginTime="0:0:0.5"
-                                            Duration="0:0:0.2"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </DataTrigger.EnterActions>
-
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="FocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <LinearGradientBrush x:Key="TabItem.Static.Background" EndPoint="0,1" StartPoint="0,0">
-            <GradientStop Color="#F0F0F0" Offset="0.0"/>
-            <GradientStop Color="#E5E5E5" Offset="1.0"/>
-        </LinearGradientBrush>
-        <SolidColorBrush x:Key="TabItem.Static.Border" Color="#ACACAC"/>
-        <LinearGradientBrush x:Key="TabItem.MouseOver.Background" EndPoint="0,1" StartPoint="0,0">
-            <GradientStop Color="#ECF4FC" Offset="0.0"/>
-            <GradientStop Color="#DCECFC" Offset="1.0"/>
-        </LinearGradientBrush>
-        <SolidColorBrush x:Key="TabItem.MouseOver.Border" Color="#7EB4EA"/>
-        <SolidColorBrush x:Key="TabItem.Selected.Background" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="TabItem.Selected.Border" Color="#ACACAC"/>
-        <SolidColorBrush x:Key="TabItem.Disabled.Background" Color="#F0F0F0"/>
-        <SolidColorBrush x:Key="TabItem.Disabled.Border" Color="#D9D9D9"/>
-        <Style x:Key="MenuItemStyle" TargetType="{x:Type TabItem}">
-            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="Background" Value="{StaticResource TabItem.Static.Background}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource TabItem.Static.Border}"/>
-            <Setter Property="Margin" Value="20 0 0 0"/>
-            <Setter Property="Padding" Value="12,8,12,8"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontFamily" Value="Trebuchet MS"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TabItem}">
-                        <Grid Margin="0 4 20 0" x:Name="templateRoot" SnapsToDevicePixels="true">
-                            <Border x:Name="mainBorder" 
-                                    Background="{TemplateBinding Background}" 
-                                    BorderThickness="0" 
-                                    BorderBrush="{TemplateBinding BorderBrush}" Margin="0">
-                                <Border 
-                                    x:Name="innerBorder" 
-                                    Background="{StaticResource TabItem.Selected.Background}" BorderThickness="0" 
-                                    BorderBrush="{StaticResource TabItem.Selected.Border}" Margin="-1" Opacity="0"/>
-                            </Border>
-                            <ContentPresenter 
-                                
-                                x:Name="contentPresenter" 
-                                ContentSource="Header" 
-                                Focusable="False" 
-                                HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" 
-                                Margin="{TemplateBinding Padding}" 
-                                RecognizesAccessKey="True" 
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
-                                VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                        </Grid>
-
-
-                        <ControlTemplate.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
-                                </MultiDataTrigger.Conditions>
-
-                                <Setter Property="Background" TargetName="mainBorder" Value="red"/>
-                                <Setter Property="BorderBrush" TargetName="mainBorder" Value="{StaticResource TabItem.MouseOver.Border}"/>
-                            </MultiDataTrigger>
-
-                            
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false"/>
-                                    <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Opacity" TargetName="contentPresenter" Value="0.56"/>
-                                <Setter Property="Background" TargetName="mainBorder" Value="{StaticResource TabItem.Disabled.Background}"/>
-                                <Setter Property="BorderBrush" TargetName="mainBorder" Value="{StaticResource TabItem.Disabled.Border}"/>
-                                <Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0"/>
-                                <Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0"/>
-                            </MultiDataTrigger>
-
-
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="false"/>
-                                    <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Background" TargetName="mainBorder" Value="transparent"/>
-                            </MultiDataTrigger>
-                            
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
-                                    <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Panel.ZIndex" Value="1"/>
-                                <Setter Property="Background" TargetName="mainBorder" Value="white"/>
-                            </MultiDataTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+      
     </Window.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-
-            <RowDefinition Height="auto"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         
         <Border
             Grid.ColumnSpan="2"
@@ -228,105 +101,13 @@
 
 
         <Frame 
-            Margin="25 0"
             Grid.Column="1"
             x:Name="content"
-            Grid.Row="1" Content="{Binding CurrentPage}" BorderBrush="{x:Null}" NavigationUIVisibility="Hidden"/>
+            Grid.RowSpan="2"
+            Content="{Binding CurrentPage}" BorderBrush="{x:Null}" NavigationUIVisibility="Hidden"/>
 
         
 
-        <TabControl Style="{DynamicResource TabControlMenu}" 
-            BorderBrush="{x:Null}"
-                    Grid.Column="1"
-            TabStripPlacement="Top">
-            
-            <TabItem 
-                DataContext="{Binding ItemsViewModel}"
-                Background="White"
-                Style="{DynamicResource MenuItemStyle}" Header="Взаимодействие с данными">
-
-
-                <Grid Margin="0 10">
-
-
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="5*"/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition MaxWidth="50"/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition MaxWidth="50"/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition MaxWidth="50"/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition MaxWidth="50"/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition Width="5*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Button 
-                        Padding="10 5" 
-                        Command="{Binding AddCommand, UpdateSourceTrigger=PropertyChanged}"
-                        Grid.Column="1" >
-                        <StackPanel Orientation="Horizontal">
-                            <Viewbox Height="20" Stretch="Uniform">
-                                <Path Fill="Black" Data="{StaticResource GeometryAdd}"/>
-                            </Viewbox>
-                            <TextBlock Margin="10 0 0 0" Text="Добавить"/>
-                        </StackPanel>
-                    </Button>
-                    <Button 
-                        Padding="10 5"
-                        Command="{Binding EditCommand}" 
-                        Grid.Column="3">
-                        <StackPanel Orientation="Horizontal">
-                            <Viewbox Height="20" Stretch="Uniform">
-                                <Grid>
-                                    <Path Fill="Black" Data="{StaticResource GeometryEdit1}"/>
-                                    <Path Fill="Black" Data="{StaticResource GeometryEdit2}"/>
-                                </Grid>
-                            </Viewbox>
-                            <TextBlock Margin="10 0 0 0" Text="Редактировать"/>
-                        </StackPanel>
-                    </Button>
-                    <Button 
-                        Padding="10 5" 
-                        Command="{Binding RemoveCommand}"
-                        Grid.Column="5" >
-                        <StackPanel Orientation="Horizontal">
-                            <Viewbox Height="20" Stretch="Uniform">
-                                <Grid>
-                                    <Path Fill="Black" Data="{StaticResource GeomertyRemove1}"/>
-                                    <Path Fill="Black" Data="{StaticResource GeomertyRemove2}"/>
-                                </Grid>
-                            </Viewbox>
-                            <TextBlock Margin="10 0 0 0" Text="Удалить"/>
-                        </StackPanel>
-                    </Button>
-                    <Button 
-                        Padding="10 5" 
-                        Grid.Column="7" 
-                        Command="{Binding UpdateCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Viewbox Height="20" Stretch="Uniform">
-                                <Path Fill="Black" Data="{StaticResource GeometryReloadS}"/>
-                            </Viewbox>
-                            <TextBlock Margin="10 0 0 0" Text="Обновить"/>
-                        </StackPanel>
-                    </Button>
-
-                </Grid>
-                
-
-            </TabItem>
-
-            <TabItem Style="{DynamicResource MenuItemStyle}" Header="Отображение">
-
-            </TabItem>
-
-            <TabItem Style="{DynamicResource MenuItemStyle}" Header="Конфигурация подключения">
-
-            </TabItem>
-        </TabControl>
 
 
         <CheckBox Grid.Column="1" Grid.Row="0" 

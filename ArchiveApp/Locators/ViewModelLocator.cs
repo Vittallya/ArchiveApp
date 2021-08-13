@@ -20,7 +20,6 @@ namespace ArchiveApp.Locators
         }
 
         public MainViewModel MainViewModel => _serviceProvider.GetRequiredService<MainViewModel>();
-        public DisplayGroupViewModel DisplayGroupViewModel => _serviceProvider.GetRequiredService<DisplayGroupViewModel>();
         public IDefaultItemsViewModel ItemsViewModel => _serviceProvider.GetRequiredService<IDefaultItemsViewModel>();
 
     }

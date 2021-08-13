@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -103,8 +104,18 @@ namespace ArchiveApp.Resources
         }
         #endregion
 
-        private void OnTextChaged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        #region OnChanged
+
+        bool first = true;
+
+        private void OnTextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
+            if (first)
+            {
+                first = false;
+                return;
+            }
+            OnFocused();
         }
 
         private void OnItemsSourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
@@ -113,6 +124,11 @@ namespace ArchiveApp.Resources
             {
                 Type srcType = ItemsSource.GetType();
                 itemType = srcType.GetElementType();
+
+                if(itemType == null && srcType.IsGenericType)
+                {
+                    itemType = srcType.GetGenericArguments()[0];
+                }
 
                 SetupDisplayPath();
 
@@ -128,37 +144,31 @@ namespace ArchiveApp.Resources
         {
             if (DisplayMemberPath != null && itemType != null)
             {
-                NewMethod1();
+                SetupProperty(itemType, DisplayMemberPath, ref displayProperty);
+                displaySource = ItemsSource.Cast<object>()?.Select(x =>
+                {
+                    string display = displayProperty?.GetValue(x)?.ToString();
+                    return new DisplayItem(display, x);
+
+                })?.ToArray();
             }
             else
             {
-                NewMethod2();
+                displaySource = ItemsSource.Cast<object>().Select(x =>
+                {
+                    return new DisplayItem(x.ToString(), x);
+
+                }).ToArray();
             }
-        }
-
-        private void NewMethod2()
-        {
-            displaySource = ItemsSource.Cast<object>().Select(x =>
-            {
-                return new DisplayItem(x.ToString(), x);
-
-            }). ToArray();
-        }
-
-        private void NewMethod1()
-        {
-            SetupProperty(itemType, DisplayMemberPath, ref displayProperty);
-            displaySource = ItemsSource.Cast<object>()?.Select(x =>
-            {
-                string display = displayProperty?.GetValue(x)?.ToString();
-                return new DisplayItem(display, x);
-
-            })?.ToArray();
         }
 
         private void OnDisplayMebmerPathChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (itemType != null)
+            if(e.NewValue == null)
+            {
+                displayProperty = null;
+            }
+            else if (itemType != null)
             {
                 SetupProperty(itemType, DisplayMemberPath, ref displayProperty);
                 SetupDisplayPath();
@@ -167,11 +177,72 @@ namespace ArchiveApp.Resources
 
         private void OnSelectedValuePathChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (itemType != null && e.NewValue != null)
+            if (e.NewValue == null)
+            {
+                valueProperty = null;
+            }
+            else if(itemType != null)
             {
                 SetupProperty(itemType, SelectedValuePath, ref valueProperty);
             }
         }
+        private void OnSelectedItemChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
+        {
+
+            if (e.NewValue == null)
+            {
+                SelectedValue = null;
+                //tb.Text = null;
+            }
+            else
+            {
+                isPaste = true;
+
+                Text = displayProperty != null ? 
+                    displayProperty.GetValue(e.NewValue)?.ToString() : e.NewValue?.ToString();
+                
+                SelectedValue = valueProperty != null ?
+                    valueProperty.GetValue(e.NewValue) : e.NewValue;
+            }
+
+        }
+        private void OnSelectedValueChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
+        {
+            if (valueProperty != null && e.NewValue != null)
+            {
+                isPaste = true;
+
+                if (SelectedItem != null)
+                {
+                    Text = displayProperty != null ?
+                        displayProperty.GetValue(SelectedItem)?.ToString() : SelectedItem?.ToString();
+                }
+                else
+                {
+
+                    var obj = displaySource.FirstOrDefault(x => valueProperty.GetValue(x.Item)?.Equals(e.NewValue) ?? false).Item;
+                    if(obj != null)
+                    {
+                        Text = displayProperty != null ?
+                            displayProperty.GetValue(obj)?.ToString() : obj?.ToString();
+                    }
+                }
+            }
+        }
+
+        private void OnIsSearchEnabledChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is bool res)
+            {
+                if (!res)
+                    toggle.IsChecked = false;
+
+                toggle.Visibility = res ? Visibility.Visible : Visibility.Collapsed;
+                listView.Visibility = Visibility.Collapsed;
+            }
+        }
+        #endregion
+
         private void SetupProperty(Type itemType, string path, ref PropertyInfo prop)
         {
             prop = itemType.GetProperty(path);
@@ -216,9 +287,11 @@ namespace ArchiveApp.Resources
                 }
             }
         }
-
+        DisplayItem[] search;
         void OnFocused()
         {
+            listView.Visibility = Visibility.Collapsed;
+
             if (displaySource == null || !IsSearchEnabled)
                 return;
 
@@ -228,17 +301,67 @@ namespace ArchiveApp.Resources
                 return;
             }
 
-            string text = tb.Text.ToLower();
+            IEnumerable<SearchItem> res = default;
 
-            var search = displaySource.Where(x => x.Display?.ToLower()?.Contains(text) ?? false);
+            string text = Text?.ToLower();
 
-            var res = search.Select(y =>
+
+            if (!string.IsNullOrEmpty(text))
             {
-                string x = y.Display.ToLower();
+                toggle.IsChecked = false;
+                search = displaySource.Where(x => x.DisplayLower?.Contains(text) ?? false).ToArray();
+                res = GetSearchItems(text, search);
 
-                string nb1 = y.Display.Substring(0, x.IndexOf(text));
-                string b = y.Display.Substring(x.IndexOf(text), text.Length);
-                string nb2 = y.Display.Substring(x.IndexOf(text) + text.Length, x.Length - x.IndexOf(text) - text.Length);
+
+                if (!search.Any(x => string.Equals(x.DisplayLower, text)))
+                {
+                    SelectedItem = null;
+                    SelectedIndex = -1;
+                }
+                else
+                {
+                    SelectedItem = search.FirstOrDefault(x => string.Equals(x.DisplayLower, text)).Item;
+                }
+            }
+            else
+            {
+                search = null;
+                res = GetSearchItems(displaySource);
+            }
+
+
+            listView.ItemsSource = res;
+
+            if (res.Count() > 0)
+            {
+                listView.Visibility = Visibility.Visible;
+                listView.SelectedIndex = 0;
+            }
+
+        }
+
+        private static IEnumerable<SearchItem> GetSearchItems(string text, DisplayItem[] search)
+        {
+            return search.Select(y =>
+            {
+
+                string nb1 = y.Display;
+                string b = string.Empty;
+                string nb2 = string.Empty;
+
+                string x = y.DisplayLower;
+
+                if (x.Equals(text))
+                {
+                    nb1 = string.Empty;
+                    b = y.Display;
+                }
+                else if (x.IndexOf(text) > -1)
+                {
+                    nb1 = y.Display.Substring(0, x.IndexOf(text));
+                    b = y.Display.Substring(x.IndexOf(text), text.Length);
+                    nb2 = y.Display.Substring(x.IndexOf(text) + text.Length, x.Length - x.IndexOf(text) - text.Length);
+                }
 
                 var item = new SearchItem
                 {
@@ -250,35 +373,36 @@ namespace ArchiveApp.Resources
                 };
                 return item;
             });
-            listView.ItemsSource = res;
-
-            if (res.Count() > 0)
-            {
-                listView.Visibility = Visibility.Visible;
-                listView.SelectedIndex = 0;
-            }
-            else
-            {
-                SelectedItem = null;
-                SelectedIndex = -1;
-                listView.Visibility = Visibility.Collapsed;
-            }
-            
         }
-
-        private void tb_TextChanged(object sender, TextChangedEventArgs e)
+        private static IEnumerable<SearchItem> GetSearchItems(DisplayItem[] search)
         {
-            OnFocused();
+            return search.Select(y =>
+            {
+                var item = new SearchItem
+                {
+                    NotBoldPart1 = y.Display,
+                    BoldPart = string.Empty,
+                    NotBoldPart2 = string.Empty,
+                    DisplayProperty = y.Display,
+                    Item = y.Item,
+                };
+                return item;
+            });
         }
 
         private void tb_GotFocus(object sender, RoutedEventArgs e)
         {
+            if (search != null && search.Length == 1 && search[0].DisplayLower == Text.ToLower())
+                return;
+
             OnFocused();
         }
 
         private void tb_LostFocus(object sender, RoutedEventArgs e)
         {
             listView.Visibility = Visibility.Collapsed;
+            beforeColl = null;
+            toggle.IsChecked = false;
         }
 
         private void StackPanel_MouseDown(object sender, MouseButtonEventArgs e)
@@ -291,21 +415,59 @@ namespace ArchiveApp.Resources
 
         private void UpdateSelected(SearchItem item)
         {
-            isPaste = true;
-            tb.Text = item.DisplayProperty;
-            listView.Visibility = Visibility.Collapsed;
             SelectedItem = item.Item;
-
-            if (valueProperty != null)
-            {
-                SelectedValue = valueProperty.GetValue(item.Item);
-            }
+            toggle.IsChecked = false;
+            listView.Visibility = Visibility.Collapsed;
         }
 
+        IEnumerable beforeColl;
+
+        private void ToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            listView.Visibility = Visibility.Visible;
+
+            if (search != null && search.Length > 0)
+            {
+                var other = GetSearchItems(displaySource.Except(search, new DisplayItemComparer()).ToArray());
+                beforeColl = listView.ItemsSource;
+                listView.ItemsSource = listView.ItemsSource.OfType<SearchItem>().Union(other, new SearchItemComparer());
+            }
+            else if(displaySource != null)
+            {
+                listView.ItemsSource = GetSearchItems(displaySource);
+            }
+            else
+            {
+                beforeColl = null;
+                listView.Visibility = Visibility.Collapsed;
+            }
+
+            tb.Focus();
+            
+
+        }
+
+        private void ToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if(beforeColl != null)
+            {
+                listView.ItemsSource = beforeColl;
+                listView.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                listView.Visibility = Visibility.Collapsed;
+
+            }
+            tb.Focus();
+            //todo Показать только те элементы, где есть совпадения по тексту
+        }
+
+        #region OnChangedStatic
         private static void OnTextChagedStatic(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             var obj = sender as TextBoxList;
-            obj.OnTextChaged(sender, e);
+            obj.OnTextChanged(sender, e);
         }
 
         private static void OnItemsSourceChangedStatic(DependencyObject s, DependencyPropertyChangedEventArgs e)
@@ -325,34 +487,55 @@ namespace ArchiveApp.Resources
         }
         private static void OnSelectedItemChangedStatic(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
-
+            var obj = s as TextBoxList;
+            obj.OnSelectedItemChanged(s, e);
         }
-
         private static void OnSelectedValueChangedStatic(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
-
+            var obj = s as TextBoxList;
+            obj.OnSelectedValueChanged(s, e);
         }
 
         private static void OnSelectedValuePathChangedStatic(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
             var obj = s as TextBoxList;
             obj.OnSelectedValuePathChanged(s, e);
-
         }
 
         private static void OnIsSearchEnabledChangedStatic(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
             var obj = s as TextBoxList;
             obj.OnIsSearchEnabledChanged(s, e);
-
         }
 
-        private void OnIsSearchEnabledChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
+        #endregion
+
+
+    }
+
+    class DisplayItemComparer : IEqualityComparer<DisplayItem>
+    {
+        public bool Equals([AllowNull] DisplayItem x, [AllowNull] DisplayItem y)
         {
-            if (e.NewValue is bool res && !res)
-            {
-                listView.Visibility = Visibility.Collapsed;
-            }
+            return x.Item.Equals(y.Item);
+        }
+
+        public int GetHashCode([DisallowNull] DisplayItem obj)
+        {
+            return obj.Item?.GetHashCode() ?? default;
+        }
+    }
+
+    class SearchItemComparer : IEqualityComparer<SearchItem>
+    {
+        public bool Equals([AllowNull] SearchItem x, [AllowNull] SearchItem y)
+        {
+            return x?.Item == y?.Item;
+        }
+
+        public int GetHashCode([DisallowNull] SearchItem obj)
+        {
+            return obj?.Item?.GetHashCode() ?? default;
         }
     }
 }

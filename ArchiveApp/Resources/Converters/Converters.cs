@@ -136,7 +136,8 @@ namespace ArchiveApp.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Equals(value, null);
+            Visibility vis = Equals(value, null) ? Visibility.Collapsed : Visibility.Visible;
+            return vis;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -149,7 +150,8 @@ namespace ArchiveApp.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return !object.Equals(value, null);
+            Visibility vis = !Equals(value, null) ? Visibility.Collapsed : Visibility.Visible;
+            return vis;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

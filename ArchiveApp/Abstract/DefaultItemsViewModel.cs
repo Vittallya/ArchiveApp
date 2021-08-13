@@ -1,4 +1,5 @@
 ﻿using ArchiveApp.Abstract;
+using BL.Abstract;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using MVVM_Core;
@@ -10,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -17,47 +19,80 @@ using AppContext = Models.AppContext;
 
 namespace ArchiveApp.Abstract
 {
-    public abstract class DefaultItemsViewModel<T> :BaseViewModel, IDefaultItemsViewModel
-        where T: class
+    public abstract class DefaultItemsViewModel<T> : BaseViewModel, IDefaultItemsViewModel
+        where T : class
     {
         protected readonly AppContext appContext;
         private readonly PageService pageService;
+        protected readonly IDataHandler<T> handler;
 
-        public DefaultItemsViewModel(AppContext appContext, PageService pageService)
+        public DefaultItemsViewModel(AppContext appContext, PageService pageService, IDataHandler<T> handler)
         {
             this.appContext = appContext;
             this.pageService = pageService;
+            this.handler = handler;
             Init();
         }
 
         public ViewBase View { get; private set; }
 
-        protected abstract ViewBase OnSetupView();
+        protected virtual Dictionary<string, string> Colums { get; set; }
 
-        private async void Init()
+        protected virtual ViewBase OnSetupView()
         {
-            View = OnSetupView();
-            await Reload();
+            if(Colums == null)
+            {
+                throw new ArgumentException("Either override this method either override filed colums");
+            }
+
+            var gridView = new GridView();
+            
+
+            foreach(var col in Colums)
+            {
+                var column = new GridViewColumn() { Header = col.Key, DisplayMemberBinding = new Binding(col.Value) };                
+                gridView.Columns.Add(column);
+            }
+            return gridView;
         }
 
-        public object SelectedItem { get; set; }
+        private void Init()
+        {
+            View = OnSetupView();
+            Reload();
+        }
+
+        public object SelectedItem 
+        { 
+            get => selectedItem;
+            set
+            {                 
+                selectedItem = value;
+                OnPropertyChanged();
+                if (selectedItem != null && selectedItem is T t)
+                    ItemSelected(t);
+            }
+        }
 
         public ICollectionView ItemsView { get; protected set; }
         public ObservableCollection<T> Items { get; protected set; }
 
-        private async Task Add()
+        private void Add()
         {
-            await OnAdd();
+            OnAdd();
         }
 
-        private async Task Edit()
+        private void Edit()
         {
-            await OnEdit(SelectedItem as T);
+            OnEdit(SelectedItem as T);
         }
-        
-        private async Task Remove()
+
+        private void Remove()
         {
-            await OnRemove(SelectedItems.OfType<T>().ToArray());
+            if(MessageBox.Show("Подтвердить удаление?", "", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                OnRemove(SelectedItems.OfType<T>().ToArray());
+            }
         }
 
 
@@ -67,26 +102,34 @@ namespace ArchiveApp.Abstract
         private ICommand editCommand;
         private ICommand removeCommand;
         private ICommand updateCommand;
+        private object selectedItem;
 
-        public ICommand AddCommand => addCommand ?? (addCommand = new CommandAsync(async x => await Add()));
+        public ICommand AddCommand => addCommand ??= new Command(x => Add());
 
-        public ICommand EditCommand => editCommand ?? (editCommand = new CommandAsync(async x => await Edit(), y => SelectedItem != null));
+        public ICommand EditCommand => editCommand ??= new Command(x => Edit(), y => SelectedItem != null);
 
-        public ICommand RemoveCommand => removeCommand ?? (removeCommand = new CommandAsync(async x => await Remove(), y => SelectedItem != null));
+        public ICommand RemoveCommand => removeCommand ??= new Command(x => Remove(), y => SelectedItem != null);
 
-        public ICommand UpdateCommand => updateCommand ?? (updateCommand = new CommandAsync(async x => await Reload()));
+        public ICommand UpdateCommand => updateCommand ??= new Command(x => Reload());
 
         public IList SelectedItems { get; set; }
 
-        protected async Task Reload()
+        protected async void Reload()
         {
             LoadingAnimation = true;
             await OnLoadItems(appContext);
-            Items = new ObservableCollection<T>(appContext.Set<T>().Local);
-            ItemsView = CollectionViewSource.GetDefaultView(Items);
+
+            Items = new ObservableCollection<T>(appContext.Set<T>());
+
+            if (ItemsView == null)
+            {
+                ItemsView = CollectionViewSource.GetDefaultView(Items);
+            }
 
             LoadingAnimation = false;
         }
+
+        protected virtual void ItemSelected(T item) { }
 
         protected virtual async Task OnLoadItems(AppContext appContext)
         {
@@ -98,14 +141,17 @@ namespace ArchiveApp.Abstract
             pageService.RemovePage<Views.DefaultItemsView>();
             pageService.ChangePage<Views.DefaultItemsView>(DisappearAnimation.Default);
         }
-        
+
 
         public void ChangePage()
         {
             OnChangePage(pageService);
         }
-        protected abstract Task OnAdd();
-        protected abstract Task OnEdit(T item);
-        protected abstract Task OnRemove(T[] items);
+        protected abstract void OnAdd();
+        protected abstract void OnEdit(T item);
+        protected abstract void OnRemove(T[] items);
+
+
+        
     }
 }

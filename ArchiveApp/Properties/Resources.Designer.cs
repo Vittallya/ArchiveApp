@@ -22,7 +22,7 @@ namespace ArchiveApp.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace ArchiveApp.Properties {
         ///   Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ArchiveApp.Properties.Resources", typeof(Resources).Assembly);
@@ -51,12 +51,37 @@ namespace ArchiveApp.Properties {
         ///   обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Root&gt;
+        ///  &lt;Units id=&quot;1&quot; name=&quot;natio&quot;&gt;
+        ///    &lt;Item  key=&quot;0&quot; value=&quot;Русский&quot;/&gt;
+        ///    &lt;Item  key=&quot;1&quot; value=&quot;Украинец&quot;/&gt;
+        ///    &lt;Item  key=&quot;2&quot; value=&quot;Беларус&quot;/&gt;
+        ///    &lt;Item  key=&quot;3&quot; value=&quot;Узбек&quot;/&gt;
+        ///    &lt;Item  key=&quot;4&quot; value=&quot;Татжик&quot;/&gt;
+        ///    &lt;Item  key=&quot;5&quot; value=&quot;Казах&quot;/&gt;
+        ///    &lt;Item  key=&quot;6&quot; value=&quot;Якут&quot;/&gt;
+        ///    &lt;Item  key=&quot;7&quot; value=&quot;Азербайджанец&quot;/&gt;
+        ///    &lt;Item  key=&quot;8&quot; value=&quot;Латыш&quot;/&gt;
+        ///    &lt;Item  key=&quot;9&quot; value=&quot;Поляк&quot;/&gt;
+        ///    &lt;Item  key=&quot;10&quot; value=&quot;Кавказец&quot;/&gt;
+        ///  &lt;/Units&gt;
+        ///  
+        ///   [остаток строки не уместился]&quot;;.
+        /// </summary>
+        public static string DropDownData {
+            get {
+                return ResourceManager.GetString("DropDownData", resourceCulture);
             }
         }
     }

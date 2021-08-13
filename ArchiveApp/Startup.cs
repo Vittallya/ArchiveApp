@@ -25,11 +25,17 @@ namespace ArchiveApp
                 return builder.Build();
             });
 
-            serviceCollection.AddDbContext<AppContext>((pr, opts) =>
+            //serviceCollection.AddDbContext<AppContext>((pr, opts) =>
+            //{
+
+            //    //opts.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            //}, ServiceLifetime.Transient);
+
+            var factory = new AppContextFactory();
+
+            serviceCollection.AddTransient<AppContext>(x =>
             {
-                var s = pr.GetService<DbConnectionHandler>();
-                var str = s.ActualConnectionString;
-                opts.UseSqlServer(str);
+                return factory.CreateDbContext(null);
             });
 
             serviceCollection.AddTransient<IDefaultItemsViewModel>(pr =>
@@ -37,6 +43,9 @@ namespace ArchiveApp
                 var f = pr.GetService<ViewModelFactory>();
                 return f.GetItemsViewModel(pr);
             });
+
+            serviceCollection.AddTransient<XmlFileService>();
+            serviceCollection.AddSingleton<DropDownDataService>();
         }
     }
 }

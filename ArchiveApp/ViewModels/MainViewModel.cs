@@ -20,16 +20,22 @@ namespace ArchiveApp.ViewModels
         private readonly DbConnectionHandler db;
         private readonly PageService pageService;
         private readonly ViewModelFactory factory;
+        private readonly XmlFileService fileService;
+        private readonly DropDownDataService dataService;
         private readonly AppContextLoader loader;
 
         public MainViewModel(DbConnectionHandler db,
                              PageService pageService,
                              ViewModelFactory factory,
+                             XmlFileService fileService,
+                             DropDownDataService dataService,
                              AppContextLoader loader)
         {
             this.db = db;
             this.pageService = pageService;
             this.factory = factory;
+            this.fileService = fileService;
+            this.dataService = dataService;
             this.loader = loader;
             pageService.PageChanged += PageService_PageChanged;
 
@@ -44,7 +50,7 @@ namespace ArchiveApp.ViewModels
 
         private void SetupViewModel<TViewModel>() where TViewModel: IDefaultItemsViewModel
         {
-            factory.SetupItemsViewModel<ProtocolItemsViewModel>();
+            factory.SetupItemsViewModel<TViewModel>();
             ItemsViewModel = ViewModelLocator.ServiceProvider.GetRequiredService<IDefaultItemsViewModel>();
             ItemsViewModel.ChangePage();
         }
@@ -77,14 +83,6 @@ namespace ArchiveApp.ViewModels
             IsAnimVisible = true;
             Message = "Установка подключения к базе данных...";
 
-            bool res = await db.TryConnect();
-
-            if (!res)
-            {
-                Message = db.Message;
-                return false;
-            }
-
             await loader.TryLoad();
 
             if (!loader.Result)
@@ -98,10 +96,18 @@ namespace ArchiveApp.ViewModels
 
             return true;
         } 
-
+        private void InitFiles()
+        {
+            if(!fileService.IsFileExist)
+            {
+                fileService.CreateFile();                
+            }
+            dataService.ReloadData();
+        }
         private async void Init()
         {
             await InitDb();
+            InitFiles();
         }
 
         public Dictionary<string, ICommand> Tables { get; }

@@ -12,11 +12,9 @@ namespace BL.DbHandling
         public bool IsCompleted { get; private set; }
 
         private Thread thread;
-        private readonly DbConnectionHandler db;
 
-        public AppContextLoader(DbConnectionHandler db)
+        public AppContextLoader()
         {
-            this.db = db;
         }
 
         public string Message { get; private set; }
@@ -35,12 +33,13 @@ namespace BL.DbHandling
 
         private void LoadMethod()
         {
-            DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
-            builder.UseSqlServer(db.ActualConnectionString);
+            var factory = new AppContextFactory();
+
             Models.AppContext appContext = default;
+
             try
             {
-                appContext = new Models.AppContext(builder.Options);
+                appContext = factory.CreateDbContext(null);
                 appContext.Peoples.Load();
                 Result = true;
             }

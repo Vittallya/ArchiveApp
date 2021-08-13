@@ -8,12 +8,17 @@ namespace Models
     {
         public AppContext(DbContextOptions options) : base(options)
         {
-
+            //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            //ChangeTracker.LazyLoadingEnabled = true;
+            //Database.EnsureCreated();
+            
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.EnableSensitiveDataLogging();
         }
 
         public DbSet<Protocol> Protocols => Set<Protocol>();
-        public DbSet<Nationality> Nationalities => Set<Nationality>();
-        public DbSet<Organ> Organs => Set<Organ>();
         public DbSet<People> Peoples => Set<People>();
     }
 }

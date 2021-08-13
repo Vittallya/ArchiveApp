@@ -12,9 +12,11 @@ namespace ArchiveApp.Resources
         {
             Display = display;
             Item = item;
+            DisplayLower = display.ToLower();
         }
 
         internal string Display { get; }
+        internal string DisplayLower { get; }
 
         internal object Item { get; }
     }

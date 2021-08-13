@@ -5,294 +5,371 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ArchiveApp.Views"
         xmlns:vm="clr-namespace:ArchiveApp.ViewModels"
-        xmlns:c="clr-namespace:ArchiveApp.Resources"
-        mc:Ignorable="d"
+        xmlns:c="clr-namespace:ArchiveApp.Resources" 
         d:DataContext="{d:DesignInstance Type=vm:ProtocolViewModel}"
-        Title="Протокол" Height="800" Width="680">
+        mc:Ignorable="d"
+        Title="Протокол" Height="600" Width="580">
 
-    <ScrollViewer
-        HorizontalScrollBarVisibility="Disabled"
-        VerticalScrollBarVisibility="Auto">
         
     
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        
-        <StackPanel Panel.ZIndex="0" Margin="20 10">
-                <Expander Panel.ZIndex="0" IsExpanded="true" FontSize="15" BorderThickness="0" BorderBrush="Black">
+        <ScrollViewer
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+            <StackPanel TextBlock.FontSize="15" Panel.ZIndex="10" Margin="20 10">
+                <Expander 
+                    Panel.ZIndex="10" IsExpanded="true" BorderThickness="0" BorderBrush="Black">
                     <Expander.Header>
-                        <TextBlock Text="{Binding FIO}" 
+                        <StackPanel TextBlock.FontSize="16" Orientation="Horizontal">
+
+                            <TextBlock Text="{Binding Fio}" 
                                     FontWeight="Bold"
                                    Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Expander}, 
                             Path=IsExpanded, Converter={StaticResource BoolToVisInvert}}"/>
+
+                            <TextBlock Text=" (Существующая запись)" 
+                                       FontWeight="Bold"
+                                       Visibility="{Binding IsNewPeopleRecord, Mode=OneWay, Converter={StaticResource BoolToVisInvert}}"/>
+                            
+                            <TextBlock Text=" (Новая запись)" 
+                                       FontWeight="Bold"
+                                       Visibility="{Binding IsNewPeopleRecord, Mode=OneWay, Converter={StaticResource BoolToVis}}"/>
+
+                        </StackPanel>
                     </Expander.Header>
 
+                    <GroupBox
+                        Header="Человек">
 
-                    <StackPanel>
-                        <DockPanel>
-                            <TextBlock 
+                        <StackPanel Margin="5 19 0 0">
+                            <DockPanel
+                                Panel.ZIndex="20">
+                                <TextBlock 
                                     DockPanel.Dock="Top"
                                     Text="ФИО" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                            <c:TextBoxList
-                                IsSearchEnabled="{Binding IsSearchOfPeopleEnabled}"
-                                ItemsSource="{Binding AllPeoples}"
+                                <c:TextBoxList
+                                IsSearchEnabled="{Binding IsNewPeopleRecord, Converter={StaticResource BoolInvert}, Mode=OneWay}"
+                                ItemsSource="{Binding AllPeoples, Mode=OneWay}"
+                                SelectedItem="{Binding PeopleSearched, UpdateSourceTrigger=PropertyChanged}"                                         
                                 SelectedValuePath="Id"
                                 DisplayMemberPath="Fio"
-                                Text="{Binding FIO, UpdateSourceTrigger=PropertyChanged}"/>
-                        </DockPanel>
-                        <!--<DockPanel Margin="0 7 0 0">
-                                <TextBlock 
-                                    DockPanel.Dock="Top"
-                                    Text="Имя" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                                <TextBox />
+                                Panel.ZIndex="10"
+                                Text="{Binding Fio, UpdateSourceTrigger=PropertyChanged}"/>
                             </DockPanel>
-                            
-                            <DockPanel Margin="0 7 0 0">
-                                <TextBlock 
-                                    DockPanel.Dock="Top"
-                                    Text="Отчество" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                                <TextBox />
-                            </DockPanel>-->
 
-                        <DockPanel Width="150" Margin="0 7 0 0" HorizontalAlignment="Left">
-                            <TextBlock 
+                            <StackPanel 
+                                Panel.ZIndex="0" Visibility="{Binding IsFiledVisible, 
+                            Mode=OneWay,
+                            Converter={StaticResource BoolToVis}}" Margin="0 7 0 0">
+
+                                <DockPanel Width="150" Margin="0 7 0 0" HorizontalAlignment="Left">
+                                    <TextBlock 
                                     
                                     DockPanel.Dock="Top"
                                     
                                     Text="Пол" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                            <ComboBox SelectedItem="{Binding SelectedPeople.Gender}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext, Converter={StaticResource ConvGender}}"/>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </DockPanel>
-                        <DockPanel Margin="0 7 0 0">
-                            <TextBlock 
+                                    <ComboBox  
+                                    SelectedValue="{Binding People.Gender,UpdateSourceTrigger=PropertyChanged}"
+                                    SelectedValuePath="Value"
+                                    DisplayMemberPath="Key"
+                                    ItemsSource="{Binding Genders}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0 7 0 0">
+                                    <TextBlock 
                                     DockPanel.Dock="Top"
                                     Text="Дата рождения" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                            <DatePicker SelectedDate="{Binding SelectedPeople.BirthDate, UpdateSourceTrigger=PropertyChanged}" />
-                        </DockPanel>
+                                    <DatePicker SelectedDate="{Binding People.BirthDate, UpdateSourceTrigger=PropertyChanged}" />
+                                </DockPanel>
 
-                        <DockPanel Margin="0 7 0 0">
-                            <Grid
+                                <DockPanel Margin="0 7 0 0">
+                                    <Grid
                                      Margin="0 0 0 5"
                                     DockPanel.Dock="Top">
 
-                                <TextBlock 
+                                        <TextBlock 
                                         Text="Место рождения" 
                                         Style="{DynamicResource TextBlock_H4}"/>
-                                <TextBlock 
+                                    </Grid>
+                                    <TextBox Text="{Binding People.BirthPlace, UpdateSourceTrigger=PropertyChanged}" />
+                                </DockPanel>
+
+                                <DockPanel Margin="0 7 0 0"
+                               Panel.ZIndex="15">
+                                    <!--<c:TextBoxList ItemsSource="{Binding AllNationalities, Mode=OneWay}" 
+                                               Panel.ZIndex="25"
+                                                   DisplayMemberPath="Value"
+                                                   SelectedValuePath="Value"
+                                               Text="{Binding NationalityText, UpdateSourceTrigger=PropertyChanged}"
+                                               DockPanel.Dock="Bottom"
+                                                SelectedItem="{Binding Natio, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                SelectedValue="{Binding People.Nationality,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />-->
+                                    <c:TextBoxList ItemsSource="{Binding AllNationalities, Mode=OneWay}" 
+                                               Panel.ZIndex="25"
+                                                   DisplayMemberPath="Value"
+                                                   SelectedValuePath="Value"
+                                               Text="{Binding NationalityText, UpdateSourceTrigger=PropertyChanged}"
+                                               DockPanel.Dock="Bottom"
+                                                SelectedValue="{Binding People.Nationality, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+                                    <TextBlock 
+                                        Visibility="{Binding People.Nationality, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
-                                        HorizontalAlignment="Right" DockPanel.Dock="Top" Text="*"/>
-                            </Grid>
-                            <c:TextBoxList Text="{Binding SelectedPeople.BirthPlace, UpdateSourceTrigger=PropertyChanged}" Panel.ZIndex="1"/>
-                        </DockPanel>
-
-                        <DockPanel Margin="0 7 0 0"
-                               Panel.ZIndex="5">
-
-                            <Grid
-                                               Panel.ZIndex="1"
+                                        DockPanel.Dock="Right" 
+                                        Text="*"/>
+                                    <TextBlock 
+                                    DockPanel.Dock="Left"
                                      Margin="0 0 0 5"
-                                    DockPanel.Dock="Top">
-
-                                <TextBlock 
+                                    FontSize="15"
                                         Text="Национальность" 
                                         Style="{DynamicResource TextBlock_H4}"/>
-                                <TextBlock 
-                                        Visibility="{Binding SelectedNationality, Converter={StaticResource NullToVis}}"
-                                        VerticalAlignment="Bottom"
-                                        HorizontalAlignment="Right" DockPanel.Dock="Top" Text="*"/>
-                            </Grid>
-                            <c:TextBoxList ItemsSource="{Binding AllNationalities}" 
+                                </DockPanel>
+
+                                <DockPanel Margin="0 7 0 0"
+                               Panel.ZIndex="14">
+                                    <c:TextBoxList ItemsSource="{Binding AllEducation}" 
                                                Panel.ZIndex="25"
-                                               Text="{Binding NationalityText, UpdateSourceTrigger=PropertyChanged}"
-                                               DisplayMemberPath="Name"
-                                               SelectedItem="{Binding SelectedNationality}" />
-                        </DockPanel>
+                                                   DisplayMemberPath="Value"
+                                                   SelectedValuePath="Value"
+                                               Text="{Binding EducationText, UpdateSourceTrigger=PropertyChanged}"
+                                               DockPanel.Dock="Bottom"                                                   
+                                               SelectedValue="{Binding People.Education,UpdateSourceTrigger=PropertyChanged}" />
 
-                        <StackPanel 
-                               Panel.ZIndex="0"  Margin="0 7" Orientation="Horizontal">
+                                    <TextBlock 
+                                        Visibility="{Binding People.Education, Converter={StaticResource NullToVisInv}}"
+                                        VerticalAlignment="Bottom"
+                                        DockPanel.Dock="Right" 
+                                        Text="*"/>
+                                    <TextBlock 
+                                    DockPanel.Dock="Left"
+                                     Margin="0 0 0 5"
+                                        Text="Образование" 
+                                        Style="{DynamicResource TextBlock_H4}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0 7 0 0"
+                               Panel.ZIndex="13">
+                                    <c:TextBoxList ItemsSource="{Binding AllParty, Mode=OneWay}" 
+                                                   Panel.ZIndex="25"
+                                                   Text="{Binding PartyText, UpdateSourceTrigger=PropertyChanged}"
+                                                   DockPanel.Dock="Bottom"
+                                                    DisplayMemberPath="Value"
+                                                    SelectedValuePath="Value"
+                                                   SelectedValue="{Binding People.Party,UpdateSourceTrigger=PropertyChanged}" />
 
-                            <DockPanel Width="180">
-                                <TextBlock 
-                                    DockPanel.Dock="Top"
-                                    Text="Образование" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                                <ComboBox SelectedItem="{Binding SelectedPeople.Education}" 
-                                                  ItemsSource="{Binding Education}">
+                                    <TextBlock 
+                                        Visibility="{Binding People.Party, Converter={StaticResource NullToVisInv}}"
+                                        VerticalAlignment="Bottom"
+                                        DockPanel.Dock="Right" 
+                                        Text="*"/>
+                                    <TextBlock 
+                                    DockPanel.Dock="Left"
+                                     Margin="0 0 0 5"
+                                        Text="Партийность" 
+                                        Style="{DynamicResource TextBlock_H4}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0 7 0 0"
+                               Panel.ZIndex="12">
+                                    <c:TextBoxList ItemsSource="{Binding AllFamily, Mode=OneWay}" 
+                                               Panel.ZIndex="25"
+                                               Text="{Binding FamilyText, UpdateSourceTrigger=PropertyChanged}"
+                                               DockPanel.Dock="Bottom"
+                                                   
+                                                   DisplayMemberPath="Value"
+                                                   SelectedValuePath="Value"
+                                               SelectedValue="{Binding People.Family,UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext, Converter={StaticResource ConvEducation}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </DockPanel>
+                                    <TextBlock 
+                                        Visibility="{Binding People.Family, Converter={StaticResource NullToVisInv}}"
+                                        VerticalAlignment="Bottom"
+                                        DockPanel.Dock="Right" 
+                                        Text="*"/>
+                                    <TextBlock 
+                                    DockPanel.Dock="Left"
+                                     Margin="0 0 0 5"
+                                    FontSize="15"
+                                        Text="Семейное положение" 
+                                        Style="{DynamicResource TextBlock_H4}"/>
+                                </DockPanel>
 
-                            <DockPanel DockPanel.Dock="Right" Margin="10 0 0 0" Width="180" HorizontalAlignment="Left">
-                                <TextBlock 
-                                    DockPanel.Dock="Top"
-                                    Text="Семейное положение" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                                <ComboBox SelectedItem="{Binding SelectedPeople.Family}" ItemsSource="{Binding Families}" >
+                            </StackPanel>
 
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext, Converter={StaticResource ConvFamilty}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </DockPanel>
-                            <DockPanel Width="180" HorizontalAlignment="Left" Margin="10 0 0 0">
-                                <TextBlock 
-                                    DockPanel.Dock="Top"
-                                    Text="Партйность" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                                <ComboBox SelectedItem="{Binding SelectedPeople.Party}" ItemsSource="{Binding Parties}">
+                            <StackPanel Panel.ZIndex="-1" Margin="0 10" Orientation="Horizontal">
+                                <RadioButton 
+                                IsChecked="{Binding IsNewPeopleRecord}"
+                                Command="{Binding ChangeToNewRecordCommand}" VerticalContentAlignment="Center" Content="Новая запись"/>
+                                <RadioButton 
+                                IsChecked="{Binding IsNewPeopleRecord, Converter={StaticResource BoolInvert}}"
+                                Command="{Binding ChangeToExistRecordCommand}"
+                                VerticalContentAlignment="Center" Margin="10 0 0 0" Content="Существующая запись"/>
+                            </StackPanel>
 
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext, Converter={StaticResource ConvGenderParty}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </DockPanel>
+
                         </StackPanel>
-
-                        <StackPanel Margin="0 10" Orientation="Horizontal">
-                            <RadioButton VerticalContentAlignment="Center" Content="Новая запись"/>
-                            <RadioButton VerticalContentAlignment="Center" Margin="10 0 0 0" Content="Существующая"/>
-                        </StackPanel>
-
-
-                    </StackPanel>
+                    </GroupBox>
+                    
 
             </Expander>
 
-            <DockPanel Width="280" HorizontalAlignment="Left" Margin="12 7 0 0">
-                <TextBlock  
-                                    DockPanel.Dock="Top"
-                    
-                                    Text="Социальное положение на момент ареста" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                <ComboBox SelectedItem="{Binding SelectedProtocol.Social}" FontSize="15" ItemsSource="{Binding Social}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext, Converter={StaticResource ConvGenderSocial}}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </DockPanel>
-            
-            <DockPanel Margin="12 7 0 0">
+
+                <DockPanel TextBlock.FontSize="15" Margin="0 7 0 0"
+                               Panel.ZIndex="9">
+                    <c:TextBoxList ItemsSource="{Binding AllSocial, Mode=OneWay}" 
+                                               Text="{Binding SocialText, UpdateSourceTrigger=PropertyChanged}"
+                                               DockPanel.Dock="Bottom"
+                                   
+                                                   DisplayMemberPath="Value"
+                                                   SelectedValuePath="Value"
+                                               SelectedValue="{Binding Protocol.Social}" />
+
+                    <TextBlock 
+                                        Visibility="{Binding Protocol.Social, Converter={StaticResource NullToVisInv}}"
+                                        VerticalAlignment="Bottom"
+                                        DockPanel.Dock="Right" 
+                                        Text="*"/>
+                    <TextBlock 
+                                    DockPanel.Dock="Left"
+                                     Margin="0 0 0 5"
+                                    FontSize="15"
+                                        Text="Социальное положение на момент ареста" 
+                                        Style="{DynamicResource TextBlock_H4}"/>
+                </DockPanel>
+
+                <DockPanel Margin="0 7 0 0"
+                           TextBlock.FontSize="15"
+                               Panel.ZIndex="5">
+
+                    <c:TextBoxList ItemsSource="{Binding AllOrgans, Mode=OneWay}"
+                                   DockPanel.Dock="Bottom"
+                                Panel.ZIndex="5"
+                                Background="White"                                   
+                                DisplayMemberPath="Value"
+                                SelectedValuePath="Value"
+                                Text="{Binding OrganText, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedValue="{Binding Protocol.Organ}"
+                                FontSize="14"/>
+
+                    <TextBlock 
+                                Visibility="{Binding Protocol.Organ, Converter={StaticResource NullToVisInv}}"
+                                VerticalAlignment="Center"
+                                FontSize="15"
+                                DockPanel.Dock="Right" Text="*"/>
+                    <TextBlock  
+                                DockPanel.Dock="Left"                    
+                                Text="Судебный орган" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
+
+
+                </DockPanel>
+                
+                <DockPanel Panel.ZIndex="-1" Margin="0 7 0 0">
                 <TextBlock  
                                     DockPanel.Dock="Top"
                     
                                     Text="Номер протокола" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
                 <TextBox 
-                    Text="{Binding SelectedProtocol.ProtocolNumber, UpdateSourceTrigger=PropertyChanged}"
+                    Text="{Binding Protocol.ProtocolNumber, UpdateSourceTrigger=PropertyChanged}"
                                FontSize="14"/>
             </DockPanel>
-            
-            <DockPanel Margin="12 7 0 0">
+
+                <DockPanel Panel.ZIndex="-1" Margin="0 7 0 0">
                 <TextBlock  
                                     DockPanel.Dock="Top"
                     
                                     Text="Дата протокола" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
                 <DatePicker 
-                    SelectedDate="{Binding SelectedProtocol.ProtocolDateTime, UpdateSourceTrigger=PropertyChanged}"
+                    SelectedDate="{Binding Protocol.ProtocolDateTime, UpdateSourceTrigger=PropertyChanged}"
                                FontSize="14"/>
             </DockPanel>
 
-                <DockPanel Margin="12 7 0 0"
-                               Panel.ZIndex="5">
-                <TextBlock  
-                                    DockPanel.Dock="Top"
-                    
-                                    Text="Судебный орган" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                <c:TextBoxList ItemsSource="{Binding AllOrgans}"
-                               Panel.ZIndex="5"
-                               Background="White"
-                               Text="{Binding OrganText, UpdateSourceTrigger=PropertyChanged}"
-                               DisplayMemberPath="Name"
-                               SelectedItem="{Binding SelectedOrgan}"
-                               FontSize="14"/>
-            </DockPanel>
 
                 <DockPanel 
                                Panel.ZIndex="0"
-                    Margin="12 7 0 0">
+                    Margin="0 7 0 0">
                 <TextBlock  
                         DockPanel.Dock="Top"                    
                         Text="Наказание" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                <TextBox Text="{Binding SelectedProtocol.Punishment, UpdateSourceTrigger=PropertyChanged}" FontSize="14" TextWrapping="Wrap" />
+                <TextBox Text="{Binding Protocol.Punishment, UpdateSourceTrigger=PropertyChanged}" FontSize="14" TextWrapping="Wrap" />
             </DockPanel>
             
-            <DockPanel Margin="12 7 0 0">
+                <DockPanel Margin="0 7 0 0">
                 <TextBlock  
                         DockPanel.Dock="Top"                    
                         Text="Постановление" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                    <TextBox Text="{Binding SelectedProtocol.Resolution, UpdateSourceTrigger=PropertyChanged}" FontSize="14" TextWrapping="Wrap" MinHeight="40" />
+                    <TextBox Text="{Binding Protocol.Resolution, UpdateSourceTrigger=PropertyChanged}" FontSize="14" TextWrapping="Wrap" MinHeight="40" />
             </DockPanel>
             
-            <DockPanel Margin="12 7 0 0">
+                <DockPanel Margin="0 7 0 0">
                 <TextBlock  
                         DockPanel.Dock="Top"                    
                         Text="Источник" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                <TextBox Text="{Binding SelectedProtocol.Source, UpdateSourceTrigger=PropertyChanged}" FontSize="14" TextWrapping="Wrap" />
+                <TextBox Text="{Binding Protocol.Source, UpdateSourceTrigger=PropertyChanged}" FontSize="14" TextWrapping="Wrap" />
             </DockPanel>
-        </StackPanel>
+            </StackPanel>
 
+        </ScrollViewer>
+        
+        
+        
         <Rectangle Fill="WhiteSmoke" Grid.Row="1"/>
 
-        <Grid
-            VerticalAlignment="Center"
+        <StackPanel
             Grid.Row="1"
-            Margin="25 10">
+            VerticalAlignment="Center"
+            Margin="25 5">
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Style="{DynamicResource TextBlock_H3}"
+                       Foreground="Red"
+                       TextWrapping="Wrap"
+                       Margin="0 10"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVis}}"/>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            
-            <Button Grid.Column="0" HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center" 
-                    Margin="0 5 10 5"
-                    Padding="25 15">
-                <StackPanel Orientation="Horizontal">
-                    <Viewbox Width="20">
-                        <Path Data="{StaticResource GeomertyX}" Fill="DarkRed"/>
-                    </Viewbox>
-                    <TextBlock Style="{DynamicResource TextBlock_H3}" Margin="10 0 0 0" Text="Отмена"/>
-                </StackPanel>
-            </Button>
-            <Button Grid.Column="1" HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center" 
-                    Margin="10 5 0 5"
-                    Command="{Binding AcceptCommand}"
-                    Padding="25 15">
-                <StackPanel Orientation="Horizontal">
-                    <Viewbox Width="20">
-                        <Path Data="{StaticResource GeometryOk}" Fill="Green"/>
-                    </Viewbox>
-                    <TextBlock Style="{DynamicResource TextBlock_H3}" Margin="10 0 0 0" Text="Применить"/>
-                </StackPanel>
-            </Button>
+            <DockPanel>
 
-            <CheckBox HorizontalAlignment="Right"
+
+                <CheckBox HorizontalAlignment="Right"
                       Grid.Row="1" 
+                      DockPanel.Dock="Bottom"
                       Grid.Column="1"
-                      FontSize="14"
+                      FontSize="15"
                       IsChecked="{Binding IsStayActive, UpdateSourceTrigger=PropertyChanged}"
                       Content="Не закрывать окно"/>
-        </Grid>
-        </Grid>
-    </ScrollViewer>
+
+                <Button Grid.Column="0"
+                    Padding="35 7"
+                    Command="{Binding CancelCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext}">
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="20">
+                            <Path Data="{StaticResource GeomertyX}" Fill="DarkRed"/>
+                        </Viewbox>
+                        <TextBlock Style="{DynamicResource TextBlock_H3}" Margin="10 0 0 0" Text="Отмена"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="1" 
+                    Margin="50 0 0 0"
+                    DockPanel.Dock="Right"
+                    Padding="35 7"
+                    Command="{Binding AcceptCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext}">
+                    <StackPanel Orientation="Horizontal">
+                        <Viewbox Width="20">
+                            <Path Data="{StaticResource GeometryOk}" Fill="Green"/>
+                        </Viewbox>
+                        <TextBlock Style="{DynamicResource TextBlock_H3}" 
+                               Margin="10 0 0 0" 
+                               Visibility="{Binding IsEdit, Converter={StaticResource BoolToVisInvert}}"
+                               Text="Добавить"/>
+                        <TextBlock  Style="{DynamicResource TextBlock_H3}"
+                                    Visibility="{Binding IsEdit, Converter={StaticResource BoolToVis}}" 
+                                    Margin="10 0 0 0" Text="Редактировать"/>
+                    </StackPanel>
+                </Button>
+            </DockPanel>
+        </StackPanel>
+        
+    </Grid>
 </Window>
