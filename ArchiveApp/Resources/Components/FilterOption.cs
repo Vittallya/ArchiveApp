@@ -22,9 +22,10 @@ namespace ArchiveApp.Resources.Components
         public ObservableCollection<FilterControl> FilterControls { get; }
     }
 
-    public abstract class FilterOption: BaseViewModel, IFilterOption
+    public abstract class FilterOption : BaseViewModel, IFilterOption
     {
         private Func<object, object> valueGetter;
+        private bool isAllConfition;
 
         public event Action<IFilterOption> FilterValueChanged;
 
@@ -49,7 +50,7 @@ namespace ArchiveApp.Resources.Components
             Header = header;
             PropertyType = pType;
             this.valueGetter = valueGetter;
-            FilterControls = new ObservableCollection<FilterControl>();            
+            FilterControls = new ObservableCollection<FilterControl>();
         }
 
 
@@ -60,15 +61,38 @@ namespace ArchiveApp.Resources.Components
             return valueGetter?.Invoke(item);
         }
 
+        //public bool Filter(object item)
+        //{
+        //    if (FilterControls.All(y => y.IsClear))
+        //        return true;
+        //    object value = GetValue(item);
+        //    return OnFilter(value);
+        //}
+
+        public bool IsAllConfition { 
+            get => isAllConfition;
+            set 
+            {
+                isAllConfition = value;
+                OnFilterChanged();
+            } 
+        }
+
         public bool Filter(object item)
         {
             if (FilterControls.All(y => y.IsClear))
                 return true;
             object value = GetValue(item);
-            return OnFilter(value);
+
+            if (IsAllConfition)
+            {
+                return FilterControls.All(y => OnFilter(value, y));
+            }
+
+            return FilterControls.Any(y => OnFilter(value, y));
         }
 
-        protected abstract bool OnFilter(object value);
+        protected abstract bool OnFilter(object value, FilterControl control);
     }
 
     public class StringFilterOption: FilterOption
@@ -78,75 +102,116 @@ namespace ArchiveApp.Resources.Components
         public StringFilterOption(string p, string h, Func<object, object> propertyInfo, Type pr) :base(p, h, propertyInfo, pr)
         {  }
 
-        protected override void OnPrepare()
-        {
-            predicates = FilterControls.Where(x => x.FilterValue is string str && str.Length > 0).
-            Select(x =>
-            {
-                string filterValue = x.FilterValue.ToString().ToLower();
+        //protected override void OnPrepare()
+        //{
+        //    predicates = FilterControls.Where(x => x.FilterValue is string str && str.Length > 0).
+        //    Select(x =>
+        //    {
+        //        string filterValue = x.FilterValue.ToString().ToLower();
 
+
+        //        if (filterValue.Contains('*'))
+        //        {
+        //            if (filterValue.Length == 1)
+        //            {
+        //                Predicate<object> predicate = val => true;
+        //                return predicate;
+        //            }
+
+        //            Predicate<object> predicate1 = (value) =>
+        //            {
+        //                if (value is string str)
+        //                {
+        //                    string[] parts = filterValue.Split('*');
+
+        //                    string lower = str.ToLower();
+        //                    int i = 0;
+        //                    int lastIndex = -1;
+
+        //                    return parts.All(y =>
+        //                    {
+        //                        if (i == parts.Length - 1 && i > 0)
+        //                        {
+        //                            if (y.Length == 0)
+        //                            {
+        //                                return lastIndex + 1 < lower.Length;
+        //                            }
+        //                            else
+        //                            {
+        //                                int last = lower.LastIndexOf(y);
+        //                                return last + y.Length == lower.Length;
+        //                            }
+        //                        }
+
+        //                        int index = lower.IndexOf(y);
+        //                        bool res = index == 0 || (index > lastIndex && i > 0);
+        //                        lastIndex = index;
+        //                        i++;
+        //                        return res;
+        //                    });
+        //                }
+        //                return false;
+        //            };
+
+        //            return predicate1;
+
+        //        }
+        //        else
+        //        {
+        //            Predicate<object> predicate = v => filterValue.CompareTo(v.ToString().ToLower()) == 0;
+        //            return predicate;
+        //        }
+
+        //    }).
+        //    ToArray();
+        //}
+
+        protected override bool OnFilter(object value, FilterControl a)
+        {
+            if (value is string str && a.FilterValue is string filterValue)
+            {
+                filterValue = filterValue.ToLower();
+                string lower = str.ToLower();
 
                 if (filterValue.Contains('*'))
                 {
                     if (filterValue.Length == 1)
                     {
-                        Predicate<object> predicate = val => true;
-                        return predicate;
+                        return true;
                     }
 
-                    Predicate<object> predicate1 = (value) =>
+                    string[] parts = filterValue.Split('*');
+
+                    int i = 0;
+                    int lastIndex = -1;
+
+                    return parts.All(y =>
                     {
-                        if (value is string str)
+                        if (i == parts.Length - 1 && i > 0)
                         {
-                            string[] parts = filterValue.Split('*');
-
-                            string lower = str.ToLower();
-                            int i = 0;
-                            int lastIndex = -1;
-
-                            return parts.All(y =>
+                            if (y.Length == 0)
                             {
-                                if (i == parts.Length - 1 && i > 0)
-                                {
-                                    if (y.Length == 0)
-                                    {
-                                        return lastIndex + 1 < lower.Length;
-                                    }
-                                    else
-                                    {
-                                        int last = lower.LastIndexOf(y);
-                                        return last + y.Length == lower.Length;
-                                    }
-                                }
-
-                                int index = lower.IndexOf(y);
-                                bool res = index == 0 || (index > lastIndex && i > 0);
-                                lastIndex = index;
-                                i++;
-                                return res;
-                            });
+                                return lastIndex + 1 < lower.Length;
+                            }
+                            else
+                            {
+                                int last = lower.LastIndexOf(y);
+                                return last + y.Length == lower.Length;
+                            }
                         }
-                        return false;
-                    };
 
-                    return predicate1;
-
-                }
-                else
-                {
-                    Predicate<object> predicate = v => filterValue.CompareTo(v.ToString().ToLower()) == 0;
-                    return predicate;
-                }
-
-            }).
-            ToArray();
-        }
-
-        Predicate<object>[] predicates;
-
-        protected override bool OnFilter(object value)
-        {
-            return predicates?.Any(p => p?.Invoke(value) ?? false) ?? false;
+                        int index = lower.IndexOf(y);
+                        bool res = index == 0 || (index > lastIndex && i > 0);
+                        lastIndex = index;
+                        i++;
+                        return res;
+                    });
+                };
+                return filterValue.CompareTo(lower) == 0;
+            }
+            return false;
+            //return IsAllConfition ? 
+            //    predicates.All(p => p.Invoke(value)) : predicates.Any(p => p.Invoke(value));
         }
     }
 
@@ -157,41 +222,25 @@ namespace ArchiveApp.Resources.Components
             IsHelpingOptions = true;
         }
 
-
-        protected override void OnPrepare()
+        protected override bool OnFilter(object value, FilterControl a)
         {
-            var arr = FilterControls.ToArray();
-
-            predicate = value =>
+            if (a.FilterValue.GetType() == value.GetType() &&
+            a.FilterValue is IComparable filterValue && value is IComparable valueComp)
             {
-                return arr.Any(a =>
+                int compare = a.SelectedIndex - 1;
+
+
+                bool res = valueComp.CompareTo(filterValue) == compare;
+
+                if (a.SelectedIndex > 2)
                 {
+                    int compareOr = a.SelectedIndex == 4 ? 1 : -1;
+                    return res || valueComp.CompareTo(filterValue) == compareOr;
+                }
+                return res;
+            }
 
-                    if (a.FilterValue is IComparable filterValue && value is IComparable valueComp)
-                    {
-                        int compare = a.SelectedIndex - 1;
-
-
-                        bool res = valueComp.CompareTo(filterValue) == compare;
-
-                        if (a.SelectedIndex > 2)
-                        {
-                            int compareOr = a.SelectedIndex == 4 ? 1 : -1;
-                            return res || valueComp.CompareTo(filterValue) == compareOr;
-                        }
-                        return res;
-                    }
-
-                    return false;
-                });
-            };
-        }
-
-        Predicate<object> predicate;
-
-        protected override bool OnFilter(object value)
-        {
-            return predicate?.Invoke(value) ?? false;            
+            return false;
         }
 
     }
