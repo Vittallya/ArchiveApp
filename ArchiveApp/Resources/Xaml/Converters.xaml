@@ -6,6 +6,8 @@
     <local:ConverterBoolInvert x:Key="BoolInvert"/>
     <local:ConverterNullToVisibility x:Key="NullToVis"/>
     <local:ConverterNullToVisibilityInvert x:Key="NullToVisInv"/>
+    <local:ConverterNonZeroToVisibility x:Key="NonZeroToVis"/>
+    <local:ConverterZeroToVisibility x:Key="ZeroToVis"/>
 
     <local:ConverterEducation x:Key="ConvEducation"/>
     <local:ConverterFamily x:Key="ConvFamilty"/>

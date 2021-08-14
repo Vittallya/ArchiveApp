@@ -159,6 +159,43 @@ namespace ArchiveApp.Converters
             return value;
         }
     }
+    
+    public class ConverterNonZeroToVisibility : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if(value is IComparable comp)
+            {
+                Visibility vis = comp.CompareTo(0) == 1 ? Visibility.Visible : Visibility.Collapsed;
+                return vis;
+            }
+
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
+    public class ConverterZeroToVisibility : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if(value is IComparable comp)
+            {
+                Visibility vis = comp.CompareTo(0) == 0 ? Visibility.Visible : Visibility.Collapsed;
+                return vis;
+            }
+
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value;
+        }
+    }
 
     public class ConverterMinuteToTimeSpan : IValueConverter
     {

@@ -46,19 +46,17 @@ namespace ArchiveApp.ViewModels
 
 
         public void OnAdd()
-        {
-            var people = Protocol?.People;
-
+        {            
             Protocol = new Protocol() { ProtocolDateTime = new DateTime(1937, 10, 10)};
             IsNewPeopleRecord = true;
 
-            if (people == null)
+            if (People == null)
             {
                 People = new People { Gender = true, BirthDate = new DateTime(1920, 10, 10) };
             }
             else
             {
-                PeopleSearched = people;
+                PeopleSearched = People;
                 IsNewPeopleRecord = false;
             }
 
@@ -136,6 +134,15 @@ namespace ArchiveApp.ViewModels
             {
                 dropDownDataService.SaveChanges();
                 ReloadDropDownData();
+            }
+
+            if (IsEdit)
+            {
+                OnEdit(Protocol);
+            }
+            else
+            {
+                OnAdd();
             }
         }
 

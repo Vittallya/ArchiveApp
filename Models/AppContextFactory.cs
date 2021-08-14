@@ -18,6 +18,7 @@ namespace Models
         public AppContext CreateDbContext(string[] args)
         {
             var opt = new DbContextOptionsBuilder();
+            opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
             if (ActualConnectionString == null)
             {

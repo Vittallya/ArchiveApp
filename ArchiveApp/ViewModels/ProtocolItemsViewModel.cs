@@ -26,14 +26,13 @@ namespace ArchiveApp.ViewModels
     {
         private readonly Validator validator;
         private readonly WindowsService windowsService;
-        protected override async Task OnLoadItems(AppContext appContext)
-        {            
-            await appContext.Protocols.
-                Include(x => x.People).
-                LoadAsync();
+        protected override async Task<IEnumerable<Protocol>> OnLoadItems(AppContext appContext)
+        {
+            return appContext.Protocols.
+                Include(x => x.People);
         }
 
-        protected override Dictionary<string, string> Colums { get; set; } = new Dictionary<string, string>
+        protected override Dictionary<string, string> Columns { get; set; } = new Dictionary<string, string>
         {
             {"Фамилия","People.Surname" },
             {"Имя","People.Name" },
@@ -114,28 +113,25 @@ namespace ArchiveApp.ViewModels
 
         private async void DetailVm_Accepted(ProtocolViewModel obj)
         {
-            await handler.Update(obj.Protocol);
+            var copy = obj.Protocol.Clone() as Protocol;
+            //await handler.Update(obj.Protocol);
+            await handler.Update(copy);
 
             if (obj.IsEdit)
             {
-                Items[indexOfEditable] = obj.Protocol;
+                Items[indexOfEditable] = copy;
             }
             else
             {
-                Items.Add(obj.Protocol);
+                Items.Add(copy);
             }
 
             if (!obj.IsStayActive)
             {
                 _window.Close();
             }
-            else
-            {
-                obj.OnEdit(obj.Protocol);
-            }
-
-            ItemsView.Refresh();
-            
+            //ItemsView.DeferRefresh();
+            //RefreshCollectionView();            
         }
 
         int indexOfEditable;
@@ -161,9 +157,13 @@ namespace ArchiveApp.ViewModels
                         return;
                 }
 
-
                 handler.Remove(items, IsRemoveAll);
                 Reload();
+                //for (int i = 0; i < items.Length; i++)
+                //{
+                //    Items.Remove(items[i]);
+                //}
+                //RefreshCollectionView();
             }
             catch(Exception e)
             {
@@ -183,26 +183,30 @@ namespace ArchiveApp.ViewModels
 
 
 
-        //protected override ViewBase OnSetupView()
-        //{
-        //    var grid = new GridView();
+        protected override ViewBase OnSetupView()
+        {
+            var grid = new GridView();
 
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Фамилия", DisplayMemberBinding = new Binding("") });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Имя", DisplayMemberBinding = new Binding("People.Name") });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Отчество", DisplayMemberBinding = new Binding("People.Otchestvo") });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "", DisplayMemberBinding = new Binding("People.Gender") { Converter = new Converters.ConverterGenderShort() } });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Национальность", DisplayMemberBinding = new Binding("People.Nationality") });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Место рождения", DisplayMemberBinding = new Binding("People.BirthPlace") });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Образование", DisplayMemberBinding = new Binding("People.Education") { Converter = new Converters.ConverterEducation() } });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Партийность", DisplayMemberBinding = new Binding("People.Party") { Converter = new Converters.ConverterParty() } });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Семейное положение", DisplayMemberBinding = new Binding("People.Family") { Converter = new Converters.ConverterFamily() } });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Соц. полож. на момент ареста", DisplayMemberBinding = new Binding("Social") { Converter = new Converters.ConverterSocial() } });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Наказание", DisplayMemberBinding = new Binding("Punishment") });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Постановление", DisplayMemberBinding = new Binding("Resolution") });
-        //    grid.Columns.Add(new GridViewColumn() { Header = "Источник", DisplayMemberBinding = new Binding("Source") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Фамилия", DisplayMemberBinding = new Binding("People.Surname") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Имя", DisplayMemberBinding = new Binding("People.Name") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Отчество", DisplayMemberBinding = new Binding("People.Otchestvo") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Пол", DisplayMemberBinding = new Binding("People.Gender") { Converter = new Converters.ConverterGenderShort() } });
+            grid.Columns.Add(new GridViewColumn() { Header = "Национальность", DisplayMemberBinding = new Binding("People.Nationality") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Место рождения", DisplayMemberBinding = new Binding("People.BirthPlace") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Дата рождения", DisplayMemberBinding = new Binding("People.BirthDate") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Образование", DisplayMemberBinding = new Binding("People.Education") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Партийность", DisplayMemberBinding = new Binding("People.Party")});
+            grid.Columns.Add(new GridViewColumn() { Header = "Семейное положение", DisplayMemberBinding = new Binding("People.Family")});
+            grid.Columns.Add(new GridViewColumn() { Header = "Соц. полож. на момент ареста", DisplayMemberBinding = new Binding("Social") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Номер протокола", DisplayMemberBinding = new Binding("ProtocolNumber") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Судебный орган", DisplayMemberBinding = new Binding("Organ") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Дата протокола", DisplayMemberBinding = new Binding("ProtocolDateTime") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Наказание", DisplayMemberBinding = new Binding("Punishment") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Постановление", DisplayMemberBinding = new Binding("Resolution") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Источник", DisplayMemberBinding = new Binding("Source") });
 
 
-        //    return grid;
-        //}
+            return grid;
+        }
     }
 }

@@ -1,0 +1,57 @@
+﻿<Window x:Class="ArchiveApp.Views.GroupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ArchiveApp.Views"
+        mc:Ignorable="d"
+        xmlns:vm="clr-namespace:ArchiveApp.ViewModels"
+        d:DataContext="{d:DesignInstance Type=vm:GroupSettingsViewModel}"
+        ResizeMode="NoResize"
+        Title="Группировка данных" Height="220" Width="400">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="60"/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel TextBlock.FontSize="15"
+                    VerticalAlignment="Center"
+                    Margin="25 15">
+            <RadioButton GroupName="1" 
+                         Command="{Binding ClearGrouping}"
+                         IsChecked="{Binding IsGrouping, Converter={StaticResource BoolInvert}}"
+                         Content="Не группировать" />
+            <RadioButton GroupName="1"
+                         IsChecked="{Binding IsGrouping}"
+                         Command="{Binding SetupGrouping}"
+                         Margin="0 15 0 0" 
+                         Content="Группировать по полю:" />
+            
+            <ComboBox Margin="0 5" ItemsSource="{Binding Columns}"
+                      IsEnabled="{Binding IsGrouping}"
+                      DisplayMemberPath="Header"
+                      SelectedItem="{Binding SelectedColumn, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <Rectangle Fill="#FFF6F6F6" Grid.Row="1"/>
+
+        <Button Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Padding="35 7"
+                    Command="{Binding Accept}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext}">
+            <StackPanel Orientation="Horizontal">
+                <Viewbox Width="20">
+                    <Path Data="{StaticResource GeometryOk}" Fill="Green"/>
+                </Viewbox>
+                <TextBlock Style="{DynamicResource TextBlock_H3}" 
+                               Margin="10 0 0 0" 
+                               Visibility="{Binding IsEdit, Converter={StaticResource BoolToVisInvert}}"
+                               Text="Применить"/>
+            </StackPanel>
+        </Button>
+
+    </Grid>
+</Window>

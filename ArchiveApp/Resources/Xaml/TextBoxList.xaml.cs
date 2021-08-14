@@ -208,25 +208,34 @@ namespace ArchiveApp.Resources
         }
         private void OnSelectedValueChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
-            if (valueProperty != null && e.NewValue != null)
+            if (valueProperty != null)
             {
                 isPaste = true;
 
-                if (SelectedItem != null)
+                if(e.NewValue != null)
                 {
-                    Text = displayProperty != null ?
-                        displayProperty.GetValue(SelectedItem)?.ToString() : SelectedItem?.ToString();
-                }
-                else
-                {
-
-                    var obj = displaySource.FirstOrDefault(x => valueProperty.GetValue(x.Item)?.Equals(e.NewValue) ?? false).Item;
-                    if(obj != null)
+                    if (SelectedItem != null)
                     {
                         Text = displayProperty != null ?
-                            displayProperty.GetValue(obj)?.ToString() : obj?.ToString();
+                            displayProperty.GetValue(SelectedItem)?.ToString() : SelectedItem?.ToString();
                     }
+                    else
+                    {
+
+                        var obj = displaySource.FirstOrDefault(x => valueProperty.GetValue(x.Item)?.Equals(e.NewValue) ?? false).Item;
+                        if (obj != null)
+                        {
+                            Text = displayProperty != null ?
+                                displayProperty.GetValue(obj)?.ToString() : obj?.ToString();
+                        }
+                    }
+
                 }
+                else if (DisplayMemberPath == SelectedValuePath)
+                {
+                    Text = null;
+                }
+
             }
         }
 
@@ -392,7 +401,7 @@ namespace ArchiveApp.Resources
 
         private void tb_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (search != null && search.Length == 1 && search[0].DisplayLower == Text.ToLower())
+            if (search != null && search.Length == 1 && search[0].DisplayLower == Text?.ToLower())
                 return;
 
             OnFocused();
