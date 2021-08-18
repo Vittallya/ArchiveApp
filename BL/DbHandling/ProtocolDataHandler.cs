@@ -1,4 +1,5 @@
 ﻿using BL.Abstract;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using System;
 using System.Collections.Generic;
@@ -80,15 +81,34 @@ namespace BL.DbHandling
             }
         }
 
+        public async Task<IEnumerable<Protocol>> LoadItems()
+        {
+            await context.Protocols.Include(p => p.People).LoadAsync();
+            return context.Protocols.Include(p => p.People);
+        }
+
+        Action invoker;
+
         public async Task<bool> Update(Protocol item)
         {
             try
             {
-                await using(var context = new AppContextFactory().CreateDbContext(null))
-                {
-                    context.Protocols.Update(item);
-                    await context.SaveChangesAsync();
-                }
+                //invoker?.Invoke();
+
+                context.Protocols.Update(item);
+                await context.SaveChangesAsync();
+                context.ChangeTracker.Clear();
+                //await using(var context = new AppContextFactory().CreateDbContext(null))
+                //{
+                //    context.Protocols.Update(item);
+                //    await context.SaveChangesAsync();
+                //}
+
+                //invoker = () =>
+                //{
+                //    context.Entry(item.People).State = EntityState.Detached;
+                //    context.Entry(item).State = EntityState.Detached;
+                //};
                 return true;
             }
             catch(Exception e)
@@ -98,9 +118,6 @@ namespace BL.DbHandling
             }
         }
 
-        
-
-        Action action;
 
         public bool Remove(Protocol[] items, bool isRemoveAll)
         {
@@ -137,9 +154,5 @@ namespace BL.DbHandling
             }
         }
 
-        public void ClearTracking()
-        {
-            action?.Invoke();
-        }
     }
 }

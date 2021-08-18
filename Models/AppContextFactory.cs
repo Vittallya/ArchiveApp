@@ -28,8 +28,7 @@ namespace Models
                 }
             }
 
-            opt.UseSqlServer(ActualConnectionString);
-
+            opt.UseSqlServer(ActualConnectionString);            
 
             return new AppContext(opt.Options);
         }

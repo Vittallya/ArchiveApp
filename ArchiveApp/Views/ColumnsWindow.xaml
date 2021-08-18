@@ -9,7 +9,7 @@
         d:DataContext="{d:DesignInstance Type=vm:FieldsViewModel}"
         Height="500"
         Width="350"
-        Title="ColumnsWindow">
+        Title="Настройка столбцов">
     <Grid>
 
         <Grid.RowDefinitions>

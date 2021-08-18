@@ -46,7 +46,7 @@
                             <Storyboard>
                                 <DoubleAnimation 
                                             Storyboard.TargetProperty="Width"
-                                            To="250"
+                                            To="220"
                                             Duration="0:0:0.2">
                                     <DoubleAnimation.EasingFunction>
                                         <ElasticEase Oscillations="0"/>
@@ -86,18 +86,38 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         
+        
+        
         <Border
             Grid.ColumnSpan="2"
+            Style="{DynamicResource Increace}"
+            Visibility="{Binding IsAnimVisible, Converter={StaticResource BoolToVis}}"
                     Grid.RowSpan="2"
             Background="White" 
-            Style="{DynamicResource Increace}">
+            Panel.ZIndex="100">
 
             <TextBlock
                     Text="{Binding Message, UpdateSourceTrigger=PropertyChanged}"
                     HorizontalAlignment="Center" 
                     Style="{DynamicResource TextBlock_H2}"
                     VerticalAlignment="Center"/>
+            
+            
+            
         </Border>
+
+        <Button 
+            Style="{DynamicResource LinkButton}"
+            Command="{Binding ReConnect}"
+            HorizontalAlignment="Center"
+            Grid.ColumnSpan="2"
+            Panel.ZIndex="100"
+            FontSize="14"
+            Visibility="{Binding IsError, Converter={StaticResource BoolToVis}}"
+            Grid.RowSpan="2"
+            VerticalAlignment="Bottom"
+            Margin="0 0 0 25"
+            Content="Создать базу данных и подключиться"/>
 
 
         <Frame 
@@ -110,15 +130,14 @@
 
 
 
-        <CheckBox Grid.Column="1" Grid.Row="0" 
+        <!--<CheckBox Grid.Column="1" Grid.Row="0" 
                   VerticalAlignment="Center"
                   HorizontalAlignment="Left"
-                  Visibility="{Binding IsSidePanelVisible, Converter={StaticResource BoolToVisInvert}}"
-                  IsChecked="{Binding IsSidePanelVisible}" Content="Показать" />
+                  IsChecked="{Binding IsSidePanelVisible}" Content="Показать" />-->
 
         
         <Grid
-            Background="LightSalmon"
+            Background="LightSeaGreen"
             Grid.Column="0"
             Style="{StaticResource SidePanel}"
             HorizontalAlignment="Left"
@@ -134,16 +153,25 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             
-            <TextBlock Margin="10 5" Text="Таблицы" Style="{DynamicResource TextBlock_H2}"/>
+            <TextBlock Margin="10 15" Text="Таблицы" 
+                       HorizontalAlignment="Center"
+                       FontWeight="DemiBold"
+                       Style="{DynamicResource TextBlock_H1}"/>
 
-            <CheckBox Grid.Column="1"  IsChecked="{Binding IsSidePanelVisible}" Content="Скрыть" />
 
             <StackPanel Margin="25 5" Grid.Row="1">
 
                 <ItemsControl ItemsSource="{Binding Tables}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Button Content="{Binding Key}" Command="{Binding Value}"/>
+                            <Button 
+                                Padding="0 2"
+                                FontSize="15"  Command="{Binding Value}">
+                                <StackPanel Background="Transparent" Orientation="Horizontal">
+                                
+                                    <TextBlock Text="{Binding Key}"/>
+                                </StackPanel>
+                            </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

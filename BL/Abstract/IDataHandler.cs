@@ -12,10 +12,10 @@ namespace BL.Abstract
         public Task<bool> Update(T item);
 
         public bool Remove(T[] item, bool isRemoveAll);
-        public void ClearTracking();
 
         public string Message { get; }
 
+        public Task<IEnumerable<T>> LoadItems();
         public bool Result { get; }
 
         public Task<bool> SaveChanges();

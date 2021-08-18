@@ -136,6 +136,14 @@ namespace ArchiveApp.ViewModels
                 ReloadDropDownData();
             }
 
+            if (IsNewPeopleRecord)
+            {
+                var list = AllPeoples.ToList();
+                list.Add(People);
+                AllPeoples = list.ToArray();
+                People = null;
+            }
+
             if (IsEdit)
             {
                 OnEdit(Protocol);

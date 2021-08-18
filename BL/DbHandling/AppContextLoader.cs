@@ -20,8 +20,11 @@ namespace BL.DbHandling
         public string Message { get; private set; }
         public bool Result { get; private set; }
 
-        public async Task TryLoad()
+        private bool _createDb;
+
+        public async Task TryLoad(bool createDb)
         {
+            _createDb = createDb;
             thread = new Thread(LoadMethod);
             thread.Start();            
 
@@ -36,11 +39,15 @@ namespace BL.DbHandling
             var factory = new AppContextFactory();
 
             Models.AppContext appContext = default;
-
+            
             try
             {
                 appContext = factory.CreateDbContext(null);
-                appContext.Peoples.Load();
+
+                if (_createDb)
+                    appContext.Database.EnsureCreated();
+
+                appContext.Protocols.Include(y => y.People).Load();
                 Result = true;
             }
             catch(Exception ex)

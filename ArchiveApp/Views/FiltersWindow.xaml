@@ -42,7 +42,8 @@
 
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Expander Margin="0 3" >
+                            <Expander x:Name="exp" Margin="0 3" >
+
                                 <Expander.Header>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock FontSize="16" Text="{Binding Header}"/>
@@ -73,77 +74,83 @@
 
 
                                 </Expander.Header>
-                                <StackPanel  Margin="15 5 0 0" >
 
-                                    <ItemsControl ItemsSource="{Binding FilterControls}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <DockPanel Margin="0 3" >
+                                <Grid>
+                                    <StackPanel  Margin="15 5 0 0" >
 
-                                                    <ComboBox 
+                                        <ItemsControl ItemsSource="{Binding FilterControls}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel Margin="0 3" >
+
+                                                        <ComboBox 
                                                 HorizontalAlignment="Left"
                                                 Width="150"
                                                 DockPanel.Dock="Bottom"
                                                 Margin="0 5 0 0"
-                                                SelectedIndex="{Binding SelectedIndex, UpdateSourceTrigger=PropertyChanged}"
+                                                SelectedIndex="{Binding SelectedHelperIndex, UpdateSourceTrigger=PropertyChanged}"
                                                 Visibility="{Binding IsHelpingOptions, Converter={StaticResource BoolToVis}}"
                                                 ItemsSource="{Binding HelpingOptions}"/>
 
 
-                                                    <Button
+                                                        <Button
                                                 ToolTip="Удалить фильтр"
                                                 Margin="10 0 0 0"
                                                 DockPanel.Dock="Right"
                                                 CommandParameter="{Binding}"
                                                 Command="{Binding DataContext.RemoveFilterControl, 
-                                                RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}}"
+                                                RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ScrollViewer}}"
                                                 Style="{DynamicResource ButtonEmpty}">
 
-                                                        <Grid Background="Transparent">
+                                                            <Grid Background="Transparent">
 
-                                                            <Viewbox  
+                                                                <Viewbox  
                                                     Height="14"
                                                     Visibility="{Binding FilterControls.Count, Converter={StaticResource NonZeroToVis}}"
                                                     Stretch="Uniform">
-                                                                <Path Fill="Black" Data="{StaticResource GeomertyX}"/>
-                                                            </Viewbox>
-                                                        </Grid>
+                                                                    <Path Fill="Black" Data="{StaticResource GeomertyX}"/>
+                                                                </Viewbox>
+                                                            </Grid>
 
-                                                    </Button>
+                                                        </Button>
 
-                                                    <ContentControl Content="{Binding Control}"/>
+                                                        <ContentControl
+                                                        Panel.ZIndex="100"
+                                                        Content="{Binding Control}"/>
 
 
-                                                </DockPanel>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
-                                    <Button 
-                                Margin="0 7 0 0"
+                                        <Button 
+                                Margin="0 3"
                                 HorizontalAlignment="Center"
                                     Style="{DynamicResource LinkButton}"
                                     CommandParameter="{Binding}"
                                     Command="{Binding DataContext.AddFilterControl, 
                                     RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
-                                        <Grid>
-                                            <TextBlock 
+                                            <Grid>
+                                                <TextBlock 
                                         Visibility="{Binding FilterControls.Count, Converter={StaticResource ZeroToVis}}"
                                         Text="Фильтров нет. Добавить"/>
-                                            <TextBlock 
+                                                <TextBlock 
                                         Visibility="{Binding FilterControls.Count, Converter={StaticResource NonZeroToVis}}"
                                         Text="Добавить"/>
 
-                                            <!--<Viewbox  
+                                                <!--<Viewbox  
                                         Height="15"
                                         Visibility="{Binding FilterControls.Count, Converter={StaticResource NonZeroToVis}}"
                                         Stretch="Uniform">
                                         <Path Fill="Black" Data="{StaticResource GeometryAdd}"/>
                                     </Viewbox>-->
-                                        </Grid>
-                                    </Button>
+                                            </Grid>
+                                        </Button>
 
-                                </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                                
                             </Expander>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

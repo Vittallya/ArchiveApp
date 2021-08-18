@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using ArchiveApp.Resources.Components;
 
@@ -23,9 +24,9 @@ namespace ArchiveApp.Services
             this.fileService = fileService;
         }
 
-        public void ReloadData()
+        public async Task ReloadData()
         {            
-            root = fileService.Deserialize<Root>();
+            root = await fileService.Deserialize<Root>();
             units = root.Units.ToDictionary(x => x.Name, y => y.Item);
         }
 

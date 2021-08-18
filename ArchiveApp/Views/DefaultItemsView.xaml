@@ -4,6 +4,9 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:ArchiveApp.Views"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      xmlns:arr="clr-namespace:System.Collections;assembly=System.Runtime"
+      xmlns:conv="clr-namespace:ArchiveApp.Converters"
       mc:Ignorable="d" 
       xmlns:a="clr-namespace:ArchiveApp.Abstract"
       xmlns:vm="clr-namespace:ArchiveApp.ViewModels"
@@ -11,133 +14,14 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="DefaultItemsView">
     <Page.Resources>
-        <Style x:Key="FocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Margin="2" StrokeDashArray="1 2" SnapsToDevicePixels="true" StrokeThickness="1" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <LinearGradientBrush x:Key="TabItem.Static.Background" EndPoint="0,1" StartPoint="0,0">
-            <GradientStop Color="#F0F0F0" Offset="0.0"/>
-            <GradientStop Color="#E5E5E5" Offset="1.0"/>
-        </LinearGradientBrush>
-        <SolidColorBrush x:Key="TabItem.Static.Border" Color="#ACACAC"/>
-        <LinearGradientBrush x:Key="TabItem.MouseOver.Background" EndPoint="0,1" StartPoint="0,0">
-            <GradientStop Color="#ECF4FC" Offset="0.0"/>
-            <GradientStop Color="#DCECFC" Offset="1.0"/>
-        </LinearGradientBrush>
-        <SolidColorBrush x:Key="TabItem.MouseOver.Border" Color="#7EB4EA"/>
-        <SolidColorBrush x:Key="TabItem.Selected.Background" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="TabItem.Selected.Border" Color="#ACACAC"/>
-        <SolidColorBrush x:Key="TabItem.Disabled.Background" Color="#F0F0F0"/>
-        <SolidColorBrush x:Key="TabItem.Disabled.Border" Color="#D9D9D9"/>
-        <Style x:Key="MenuItemStyle" TargetType="{x:Type TabItem}">
-            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="Background" Value="{StaticResource TabItem.Static.Background}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource TabItem.Static.Border}"/>
-            <Setter Property="Margin" Value="20 0 0 0"/>
-            <Setter Property="Padding" Value="12,8,12,8"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontFamily" Value="Trebuchet MS"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TabItem}">
-                        <Grid Margin="0 4 20 0" x:Name="templateRoot" SnapsToDevicePixels="true">
-                            <Border x:Name="mainBorder" 
-                                    Background="{TemplateBinding Background}" 
-                                    BorderThickness="0" 
-                                    BorderBrush="{TemplateBinding BorderBrush}" Margin="0">
-                                <Border 
-                                    x:Name="innerBorder" 
-                                    Background="{StaticResource TabItem.Selected.Background}" BorderThickness="0" 
-                                    BorderBrush="{StaticResource TabItem.Selected.Border}" Margin="-1" Opacity="0"/>
-                            </Border>
-                            <ContentPresenter 
-                                
-                                x:Name="contentPresenter" 
-                                ContentSource="Header" 
-                                Focusable="False" 
-                                HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" 
-                                Margin="{TemplateBinding Padding}" 
-                                RecognizesAccessKey="True" 
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
-                                VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                        </Grid>
+        <x:Array x:Key="ConnectionStatusArray" Type="{x:Type sys:String}">
+            <sys:String>Подключено</sys:String>
+            <sys:String>Не подключено</sys:String>
+            <sys:String>Ошибка</sys:String>
+            <sys:String>Подключение</sys:String>
+        </x:Array>
 
-
-                        <ControlTemplate.Triggers>
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
-                                </MultiDataTrigger.Conditions>
-
-                                <Setter Property="Background" TargetName="mainBorder" Value="red"/>
-                                <Setter Property="BorderBrush" TargetName="mainBorder" Value="{StaticResource TabItem.MouseOver.Border}"/>
-                            </MultiDataTrigger>
-
-
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false"/>
-                                    <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Opacity" TargetName="contentPresenter" Value="0.56"/>
-                                <Setter Property="Background" TargetName="mainBorder" Value="{StaticResource TabItem.Disabled.Background}"/>
-                                <Setter Property="BorderBrush" TargetName="mainBorder" Value="{StaticResource TabItem.Disabled.Border}"/>
-                                <Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0"/>
-                                <Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0"/>
-                            </MultiDataTrigger>
-
-
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="false"/>
-                                    <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Background" TargetName="mainBorder" Value="transparent"/>
-                            </MultiDataTrigger>
-
-                            <MultiDataTrigger>
-                                <MultiDataTrigger.Conditions>
-                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
-                                    <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}" Value="Top"/>
-                                </MultiDataTrigger.Conditions>
-                                <Setter Property="Panel.ZIndex" Value="1"/>
-                                <Setter Property="Background" TargetName="mainBorder" Value="white"/>
-                            </MultiDataTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="MenuHeaderStyle" TargetType="ContentControl">
-            <Setter Property="FontSize" Value="16"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsTextVisible }" Value="False">
-
-                    <DataTrigger.EnterActions>
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimation 
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            BeginTime="0:0:0.5"
-                                            Duration="0:0:0.2"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </DataTrigger.EnterActions>
-
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
+        
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -151,12 +35,10 @@
                     Grid.Column="1"
             TabStripPlacement="Top">
 
-            <TabItem 
-                Visibility="{Binding ItemsViewModel, Converter={StaticResource NullToVis}}" 
-                
+            <TabItem
                 Background="White"
-                Style="{DynamicResource MenuItemStyle}" Header="Взаимодействие с данными">
-
+                Style="{DynamicResource MenuItemStyle}" 
+            Header="Взаимодействие с данными" >
 
                 <Grid Margin="0 10">
 
@@ -258,12 +140,11 @@
                     </Button>
 
                 </Grid>
-
-
             </TabItem>
 
-            <TabItem Visibility="{Binding ItemsViewModel, Converter={StaticResource NullToVis}}" 
-                     Style="{DynamicResource MenuItemStyle}" Header="Отображение">
+
+
+            <TabItem  Style="{DynamicResource MenuItemStyle}" Header="Отображение">
                 <Grid Margin="50 10">
                     <StackPanel HorizontalAlignment="Left"
                                 Orientation="Horizontal">
@@ -282,24 +163,97 @@
                                            Text=" (не установлена)"/>
                             </StackPanel>
                         </Button>
-                        
+
                         <Button 
                             Margin="15 0 0 0"
+                            Content="Фильтр"
                             Style="{DynamicResource LinkButton}"
-                            Command="{Binding ShowFiltersWindowCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Фильтр"/>
-                                <TextBlock Visibility="{Binding GroupingColumn, Converter={StaticResource NullToVis}}" 
-                                           Text="{Binding GroupingColumn.Header, StringFormat='{} ({0})'}"/>
-                                <TextBlock Visibility="{Binding GroupingColumn, Converter={StaticResource NullToVisInv}}" 
-                                           Text=" (не установлена)"/>
-                            </StackPanel>
-                        </Button>
+                            Command="{Binding ShowFiltersWindowCommand}"/>
+
+                        <Grid Margin="5 0 0 0" 
+                              Height="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ActualWidth}"
+                              Visibility="{Binding FiltersCount, Converter={StaticResource NonZeroToVis}}">
+
+                            <Ellipse Fill="Red"/>
+                            <TextBlock Margin="7 0" Foreground="White"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding FiltersCount, Mode=OneWay}"/>
+                        </Grid>
+
                     </StackPanel>
                 </Grid>
             </TabItem>
 
-            <TabItem Style="{DynamicResource MenuItemStyle}" Header="Конфигурация подключения">
+            <TabItem 
+                DataContext="{Binding Source={StaticResource loc}, Path=MainViewModel}"
+                Style="{DynamicResource MenuItemStyle}" Header="Конфигурация подключения">
+
+                <Grid Margin="50 10">
+                    <StackPanel HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <TextBlock Text="Статус соединения: "/>
+
+                        <TextBlock Text="{Binding StatusStr}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ConnectionStatus}" Value="Connected">
+                                            <Setter Property="Foreground" Value="DarkGreen"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnectionStatus}" Value="NotConnected">
+                                            <Setter Property="Foreground" Value="DarkRed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnectionStatus}" Value="Connecting">
+                                            <Setter Property="Foreground" Value="DarkGray"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnectionStatus}" Value="Error">
+                                            <Setter Property="Foreground" Value="DarkRed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+
+                        <!--<Button Command="{Binding ReConnect}" Padding="10 3" Margin="15 0 0 0">
+                            <StackPanel Orientation="Horizontal">
+
+                                <Viewbox Height="20" Stretch="Uniform">
+                                    <Grid>
+
+                                        <Path 
+                                          RenderTransformOrigin="0,0"
+                                          Fill="Black" Data="{StaticResource GeometryReloadS}"/>
+                                    </Grid>
+                                </Viewbox>
+
+                                <TextBlock Margin="10 0 0 0" Text="Переподключить"/>
+
+
+                            </StackPanel>
+                        </Button>-->
+
+
+                        <!--<Button x:Name="toggle">
+
+                            <Viewbox Height="20" Width="10" Stretch="Uniform">
+                                <Grid>
+
+                                    <Path 
+                                          RenderTransformOrigin="0,0"
+                                          Fill="Black" Data="{StaticResource GeometryEditTriangle}"/>
+                                </Grid>
+                            </Viewbox>
+                        </Button>-->
+
+                        <!--<CheckBox Content="Создать базу данных" 
+                                  IsChecked="{Binding IsCreateDb}"
+                                  Margin="10 0 0 0"/>-->
+                    </StackPanel>
+                </Grid>
 
             </TabItem>
         </TabControl>
@@ -317,14 +271,136 @@
             FontSize="15"
             View="{Binding View, UpdateSourceTrigger=PropertyChanged}">
 
-            <ListView.GroupStyle>
+
+            <ListView.ContextMenu>
+                <ContextMenu FontSize="14" >
+                    <MenuItem 
+                                Command="{Binding AddCommand}" 
+                                Header="Добавить новый">
+
+                        <MenuItem.Icon>
+                            <Viewbox Height="15" Stretch="Uniform">
+                                <Path Fill="Black" Data="{StaticResource GeometryAdd}"/>
+                            </Viewbox>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem
+                                Command="{Binding EditCommand}" 
+                                Header="Редактировать">
+
+                        <MenuItem.Icon>
+                            <Viewbox Height="18" Stretch="Uniform">
+                                <Grid>
+
+                                    <Path Fill="Black" Data="{StaticResource GeometryEdit1}"/>
+                                    <Path Fill="Black" Data="{StaticResource GeometryEdit2}"/>
+                                </Grid>
+                            </Viewbox>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem
+                                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ListView, Mode=FindAncestor}, Path=SelectedItems}"                                          
+                                Command="{Binding RemoveSelectedElement}"                                           
+                                Header="Удалить">
+
+                        <MenuItem.Icon>
+                            <Viewbox Height="18" Stretch="Uniform">
+                                <Grid>
+
+                                    <Path Fill="Black" Data="{StaticResource GeomertyRemove1}"/>
+                                    <Path Fill="Black" Data="{StaticResource GeomertyRemove2}"/>
+                                </Grid>
+                            </Viewbox>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem                               
+                        
+                            Command="{Binding UpdateCommand}"                                           
+                            Header="Обновить">
+                        <MenuItem.Icon>
+                            <Viewbox Height="20" Stretch="Uniform">
+                                <Path Fill="Black" Data="{StaticResource GeometryReloadS}"/>
+                            </Viewbox>
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                </ContextMenu>
+            </ListView.ContextMenu>
+
+
+            <!--<ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <ContentPresenter Content="{TemplateBinding Content}" />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>-->
+            
+            
+            
+            <!--
                 <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Margin" Value="0,0,0,5"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Expander Margin="10 0 0 0" IsExpanded="True" Background="LightBlue"
+                                                  BorderBrush="#FF002255" Foreground="Black" BorderThickness="1,1,1,5">
+                                            <Expander.Header>
+                                                <DockPanel>
+                                                    <TextBlock 
+                                                        FontSize="20"
+                                                        FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0"/>
+                                                    <TextBlock 
+                                                        FontSize="18"
+                                                        FontWeight="Bold" 
+                                                        FontStyle="Italic"
+                                                        Foreground="Black"
+                                                        Opacity="0.8"
+                                                        Text="{Binding Path=ItemCount, StringFormat='{} ({0})'}"/>
+                                                </DockPanel>
+                                            </Expander.Header>
+                                            <Expander.Content>
+                                                <ItemsPresenter />
+                                            </Expander.Content>
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+                --><!-- Style for groups under the top level. --><!--
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <DockPanel Margin="25 0 0 0" Background="LightBlue">
+                                <TextBlock Text="{Binding Path=Name}" Foreground="Blue" Margin="30,0,0,0"/>
+                                <TextBlock Text="{Binding Path=ItemCount}" Foreground="Blue"/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+
+
+                -->
+            <ListView.GroupStyle>
+            <GroupStyle>
                     <GroupStyle.ContainerStyle>
                         <Style TargetType="{x:Type GroupItem}">
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate>
-                                        <Expander IsExpanded="True">
+                                        <Expander Margin="5 0 0 0" IsExpanded="True">
                                             <Expander.Header>
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="Gray" FontSize="22" VerticalAlignment="Bottom" />
@@ -334,9 +410,20 @@
                                                                FontWeight="Bold" 
                                                                Margin="10,0,0,0" 
                                                                VerticalAlignment="Bottom" />
+                                                    <!--<TextBlock >
+                                                        <TextBlock.Text>
+                                                            <Binding RelativeSource="{RelativeSource Mode=TemplatedParent}"
+                                                                     Path="DataContext"
+                                                                     UpdateSourceTrigger="PropertyChanged" >
+                                                                <Binding.Converter>
+                                                                    <conv:MultiplyConverter ToValue="2"/>
+                                                                </Binding.Converter>
+                                                            </Binding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>-->
                                                 </StackPanel>
                                             </Expander.Header>
-                                            <ItemsPresenter />
+                                            <ItemsPresenter Margin="15 0 0 0" />
                                         </Expander>
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -344,6 +431,7 @@
                         </Style>
                     </GroupStyle.ContainerStyle>
                 </GroupStyle>
+            
             </ListView.GroupStyle>
             
         </ListView>

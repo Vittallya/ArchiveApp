@@ -80,36 +80,82 @@ namespace ArchiveApp.ViewModels
 
         private async Task<bool> InitDb()
         {
-            IsAnimVisible = true;
+            ConnectionStatus = ConnectionStatus.Connecting;
+
             Message = "Установка подключения к базе данных...";
 
-            await loader.TryLoad();
+            await loader.TryLoad(IsCreateDb);
 
             if (!loader.Result)
             {
                 Message = loader.Message;
-                return false;
             }
 
-            Message = "Подключение успешно!";
-            IsTextVisible = false;
-
-            return true;
+            return loader.Result;
         } 
-        private void InitFiles()
+        private async Task InitFiles()
         {
-            if(!fileService.IsFileExist)
+            Message = "Загрузка данных..";
+
+            if (!fileService.IsFileExist)
             {
                 fileService.CreateFile();                
             }
-            dataService.ReloadData();
+            await dataService.ReloadData();
         }
         private async void Init()
         {
-            await InitDb();
-            InitFiles();
+            await InitAsync();
         }
 
+
+        private async Task InitAsync()
+        {
+            IsAnimVisible = true;
+            Message = "Пизда!";
+            if (!await InitDb())
+            {
+                ConnectionStatus = ConnectionStatus.Error;
+                return;
+            }
+            ConnectionStatus = ConnectionStatus.Connected;
+
+            await InitFiles();
+
+            SetupViewModel<ProtocolItemsViewModel>();
+            Message = "Успешно!";
+            IsTextVisible = false;
+            IsAnimVisible = false;
+
+        }
+
+        public bool IsError => ConnectionStatus == ConnectionStatus.Error;
+
+        public ICommand ReConnect => new CommandAsync(async y => { IsCreateDb = true; await InitAsync(); });
+
+        public bool IsCreateDb { get; set; }
+
+        public string StatusStr => StatusWords[ConnectionStatus];
+
+        public Dictionary<ConnectionStatus, string> StatusWords { get; } = new Dictionary<ConnectionStatus, string>
+        {
+            {ConnectionStatus.Connected, "Подключено" },
+            {ConnectionStatus.NotConnected, "Не подключено" },
+            {ConnectionStatus.Error, "Ошибка" },
+            {ConnectionStatus.Connecting, "Подключение" },
+        };
+
+        public ConnectionStatus ConnectionStatus { get; private set; } = ConnectionStatus.NotConnected;
+
+        public bool IsCreate { get; set; }
+
         public Dictionary<string, ICommand> Tables { get; }
+    }
+
+
+
+    public enum ConnectionStatus
+    {
+        Connected, NotConnected, Error, Connecting
     }
 }

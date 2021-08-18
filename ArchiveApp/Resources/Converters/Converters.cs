@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Markup;
 
 namespace ArchiveApp.Converters
 {
@@ -259,6 +260,58 @@ namespace ArchiveApp.Converters
         }
     }
 
+    public class MultiplyConverter : IValueConverter
+    {
+        public int ToValue { get; set; } = 1;
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if(value is byte b)
+            {
+                return b * ToValue;
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is byte b)
+            {
+                return b / ToValue;
+            }
+            return value;
+        }
+    }
+
+    public class EnumConverterVisibility : IValueConverter
+    {
+        public int ToValue { get; set; }
+
+        public string[] Variants { get; set; }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if(targetType.IsEnum)
+            {
+                Enum.GetNames(targetType);
+                int iValue = (int)value;
+
+                if (iValue < Variants.Length)
+                    return Variants[iValue];
+
+            }
+            return value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is byte b)
+            {
+                return b / ToValue;
+            }
+            return value;
+        }
+    }
     public class ConverterGender : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

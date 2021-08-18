@@ -299,7 +299,6 @@ namespace ArchiveApp.Resources
         DisplayItem[] search;
         void OnFocused()
         {
-            listView.Visibility = Visibility.Collapsed;
 
             if (displaySource == null || !IsSearchEnabled)
                 return;
@@ -310,8 +309,22 @@ namespace ArchiveApp.Resources
                 return;
             }
 
-            IEnumerable<SearchItem> res = default;
+            listView.Visibility = Visibility.Collapsed;
+            IEnumerable<SearchItem> res = UpdateSearch();
 
+            listView.ItemsSource = res;
+
+            if (res.Count() > 0)
+            {
+                listView.Visibility = Visibility.Visible;
+                listView.SelectedIndex = 0;
+            }
+
+        }
+
+        private IEnumerable<SearchItem> UpdateSearch()
+        {
+            IEnumerable<SearchItem> res;
             string text = Text?.ToLower();
 
 
@@ -334,19 +347,13 @@ namespace ArchiveApp.Resources
             }
             else
             {
+                SelectedItem = null;
+                SelectedIndex = -1;
                 search = null;
                 res = GetSearchItems(displaySource);
             }
 
-
-            listView.ItemsSource = res;
-
-            if (res.Count() > 0)
-            {
-                listView.Visibility = Visibility.Visible;
-                listView.SelectedIndex = 0;
-            }
-
+            return res;
         }
 
         private static IEnumerable<SearchItem> GetSearchItems(string text, DisplayItem[] search)
@@ -410,7 +417,6 @@ namespace ArchiveApp.Resources
         private void tb_LostFocus(object sender, RoutedEventArgs e)
         {
             listView.Visibility = Visibility.Collapsed;
-            beforeColl = null;
             toggle.IsChecked = false;
         }
 
@@ -429,46 +435,49 @@ namespace ArchiveApp.Resources
             listView.Visibility = Visibility.Collapsed;
         }
 
-        IEnumerable beforeColl;
-
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
+            //if(search == null)
+            //    OnFocused();
+
+
+            var res = UpdateSearch();
+            isPaste = true;
+
             listView.Visibility = Visibility.Visible;
 
             if (search != null && search.Length > 0)
             {
                 var other = GetSearchItems(displaySource.Except(search, new DisplayItemComparer()).ToArray());
-                beforeColl = listView.ItemsSource;
-                listView.ItemsSource = listView.ItemsSource.OfType<SearchItem>().Union(other, new SearchItemComparer());
+                listView.ItemsSource = res.Union(other, new SearchItemComparer());
             }
             else if(displaySource != null)
             {
-                listView.ItemsSource = GetSearchItems(displaySource);
+                listView.ItemsSource = res;
             }
             else
             {
-                beforeColl = null;
                 listView.Visibility = Visibility.Collapsed;
             }
-
             tb.Focus();
-            
-
         }
+
+
 
         private void ToggleButton_Unchecked(object sender, RoutedEventArgs e)
         {
-            if(beforeColl != null)
-            {
-                listView.ItemsSource = beforeColl;
-                listView.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                listView.Visibility = Visibility.Collapsed;
+            //if(beforeColl != null)
+            //{
+            //    listView.ItemsSource = beforeColl;
+            //    listView.Visibility = Visibility.Visible;
+            //}
+            //else
+            //{
+            //    
 
-            }
-            tb.Focus();
+            //}
+            listView.Visibility = Visibility.Collapsed;
+            //tb.Focus();
             //todo Показать только те элементы, где есть совпадения по тексту
         }
 

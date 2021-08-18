@@ -1,5 +1,6 @@
 ﻿using ArchiveApp.Abstract;
 using ArchiveApp.Resources.Components;
+using ArchiveApp.Services;
 using ArchiveApp.ViewModels;
 using ArchiveApp.Views;
 using BL.Abstract;
@@ -26,21 +27,38 @@ namespace ArchiveApp.Abstract
         where T : class
     {
         protected readonly AppContext appContext;
-        private readonly PageService pageService;
+        protected readonly PageService pageService;
+        protected readonly DropDownDataService dataService;
         protected readonly IDataHandler<T> handler;
 
-        public DefaultItemsViewModel(AppContext appContext, PageService pageService, IDataHandler<T> handler)
+        public DefaultItemsViewModel(AppContext appContext,
+                                     PageService pageService,
+                                     DropDownDataService dataService,
+                                     IDataHandler<T> handler)
         {
             this.appContext = appContext;
             this.pageService = pageService;
+            this.dataService = dataService;
             this.handler = handler;
+            PropertyChanged += DefaultItemsViewModel_PropertyChanged;
             Init();
+        }
+
+        private void DefaultItemsViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(SelectedItem) && _nonNotifyProps.Contains(e.PropertyName))
+            {
+                if (selectedItem != null && selectedItem is T t)
+                {
+                    ItemSelected(t);
+                    _nonNotifyProps.Remove(e.PropertyName);
+                }
+            }
         }
 
         public ViewBase View { get; private set; }
 
         protected virtual Dictionary<string, string> Columns { get; set; }
-
 
         private void Init()
         {
@@ -63,6 +81,19 @@ namespace ArchiveApp.Abstract
         }
 
 
+        #region Данные
+
+        private List<string> _nonNotifyProps = new List<string>();
+
+        protected void SetupNonNotifyProperty(string name)
+        {
+            if (!_nonNotifyProps.Contains(name))
+            {
+                _nonNotifyProps.Add(name);
+            }
+        }
+
+        public IList SelectedItems { get; set; }
         public object SelectedItem
         {
             get => selectedItem;
@@ -70,13 +101,18 @@ namespace ArchiveApp.Abstract
             {
                 selectedItem = value;
                 OnPropertyChanged();
-                if (selectedItem != null && selectedItem is T t)
-                    ItemSelected(t);
             }
         }
 
+        private object selectedItem;
+
         public ICollectionView ItemsView { get; protected set; }
         public ObservableCollection<T> Items { get; protected set; }
+
+
+        #endregion
+
+        #region Команды и методы
 
         private void Add()
         {
@@ -95,15 +131,28 @@ namespace ArchiveApp.Abstract
                 OnRemove(SelectedItems.OfType<T>().ToArray());
             }
         }
+        protected async void Reload()
+        {
+            LoadingAnimation = true;
+            //Items = new ObservableCollection<T>(await OnLoadItems(appContext));
+            Items = new ObservableCollection<T>(await handler.LoadItems());
+            RefreshCollectionView();
+            LoadingAnimation = false;
+        }
 
+        protected abstract void OnAdd();
+        protected abstract void OnEdit(T item);
+        protected abstract void OnRemove(T[] items);
 
         public bool LoadingAnimation { get; private set; }
+
+
+
 
         private ICommand addCommand;
         private ICommand editCommand;
         private ICommand removeCommand;
         private ICommand updateCommand;
-        private object selectedItem;
 
         public ICommand AddCommand => addCommand ??= new Command(x => Add());
 
@@ -113,15 +162,8 @@ namespace ArchiveApp.Abstract
 
         public ICommand UpdateCommand => updateCommand ??= new Command(x => Reload());
 
-        public IList SelectedItems { get; set; }
+        #endregion
 
-        protected async void Reload()
-        {
-            LoadingAnimation = true;
-            Items = new ObservableCollection<T>(await OnLoadItems(appContext));
-            RefreshCollectionView();
-            LoadingAnimation = false;
-        }
 
         protected void RefreshCollectionView()
         {
@@ -131,10 +173,6 @@ namespace ArchiveApp.Abstract
 
         protected virtual void ItemSelected(T item) { }
 
-        protected virtual async Task<IEnumerable<T>> OnLoadItems(AppContext appContext)
-        {
-            return appContext.Set<T>();
-        }
 
         protected virtual void OnChangePage(PageService pageService)
         {
@@ -147,9 +185,6 @@ namespace ArchiveApp.Abstract
         {
             OnChangePage(pageService);
         }
-        protected abstract void OnAdd();
-        protected abstract void OnEdit(T item);
-        protected abstract void OnRemove(T[] items);
 
 
         #region Настрока столбцов
@@ -163,49 +198,56 @@ namespace ArchiveApp.Abstract
         private ICommand columnsCommand;
         public ICommand ColumnsCommand => columnsCommand ??= new Command(x =>
         {
-            var vm = new FieldsViewModel();
-            vm.SetupColumns(actualColumns.
-                Select(x => new ColumnComponent { Header = x.Header, IsVisible = true, Column = x }).
-                Union(removedColumns.Select(y => new ColumnComponent { Header = y.Header, IsVisible = false, Column = y })));
-
-            vm.ChangeVisible = new Command(v =>
+            if (!CheckWindow<ColumnsWindow>())
             {
-                if (v is ColumnComponent comp)
+
+                var vm = new FieldsViewModel();
+                vm.SetupColumns(actualColumns.
+                    Select(x => new ColumnComponent { Header = x.Header, IsVisible = true, Column = x }).
+                    Union(removedColumns.Select(y => new ColumnComponent { Header = y.Header, IsVisible = false, Column = y })));
+
+                vm.ChangeVisible = new Command(v =>
                 {
-                    if (comp.IsVisible)
+                    if (v is ColumnComponent comp)
                     {
-                        actualColumns.Add(comp.Column);
-                        removedColumns.Remove(comp.Column);
+                        if (comp.IsVisible)
+                        {
+                            actualColumns.Add(comp.Column);
+                            removedColumns.Remove(comp.Column);
+                        }
+                        else
+                        {
+                            actualColumns.Remove(comp.Column);
+                            removedColumns.Add(comp.Column);
+                        }
                     }
-                    else
-                    {
-                        actualColumns.Remove(comp.Column);
-                        removedColumns.Add(comp.Column);
-                    }
-                }
-            });
+                });
 
-            vm.HideAllColumns = new Command(v =>
-            {
-                removedColumns.AddRange(actualColumns);
-                actualColumns.Clear();
-                vm.SetupVisibleForAll(false);
-            });
-
-            vm.ShowAllColumns = new Command(v =>
-            {
-                foreach (var col in removedColumns)
+                vm.HideAllColumns = new Command(v =>
                 {
-                    actualColumns.Add(col);
-                }
+                    removedColumns.AddRange(actualColumns);
+                    actualColumns.Clear();
+                    vm.SetupVisibleForAll(false);
+                });
 
-                removedColumns.Clear();
-                vm.SetupVisibleForAll(true);
-            });
+                vm.ShowAllColumns = new Command(v =>
+                {
+                    foreach (var col in removedColumns)
+                    {
+                        actualColumns.Add(col);
+                    }
 
-            ColumnsWindow window = new ColumnsWindow();
-            window.DataContext = vm;
-            window.Show();
+                    removedColumns.Clear();
+                    vm.SetupVisibleForAll(true);
+                });
+
+                var window = GetNewWindow<ColumnsWindow>(vm);
+                window.Show();
+            }
+            else
+            {
+                Focus<ColumnsWindow>();
+            }
         });
 
         protected virtual ViewBase OnSetupView()
@@ -231,6 +273,7 @@ namespace ArchiveApp.Abstract
 
         #region группировка
 
+
         private ICommand setupGroupingCommand;
         public ColumnComponent GroupingColumn { get; private set; }
 
@@ -247,39 +290,91 @@ namespace ArchiveApp.Abstract
 
         public ICommand SetupGroupingCommand => setupGroupingCommand ??= new Command(x =>
         {
-            var context = new GroupSettingsViewModel();
-            context.IsGrouping = GroupingColumn != null;
-            context.SelectedColumn = GroupingColumn;
-            context.Columns = allColumns;
-
-            var win = new GroupWindow();
-
-            context.Accept = new Command(y =>
+            if (!CheckWindow<GroupWindow>())
             {
-                ItemsView.GroupDescriptions.Clear();
-                GroupingColumn = context.IsGrouping ? context.SelectedColumn : null;
-                RefreshGrouping();
-                win.Close();
-            }, z => context.SelectedColumn != null);
 
-            win.DataContext = context;
-            win.Show();
+                var context = new GroupSettingsViewModel();
+                context.IsGrouping = GroupingColumn != null;
+                context.SelectedColumn = GroupingColumn;
+                context.Columns = allColumns;
+
+                var win = GetNewWindow<GroupWindow>(context);
+
+
+                context.Accept = new Command(y =>
+                {
+                    ItemsView.GroupDescriptions.Clear();
+                    GroupingColumn = context.IsGrouping ? context.SelectedColumn : null;
+                    RefreshGrouping();
+                    win.Close();
+                }, z => context.SelectedColumn != null);
+
+                win.Show();
+            }
+            else
+            {
+                Focus<GroupWindow>();
+            }
+            
         });
         #endregion
+
+        private List<Window> _wins = new List<Window>();
+
+        private TWindow GetNewWindow<TWindow>(object dataContext)
+            where TWindow: Window, new()
+        {
+
+            var dc = dataContext;
+            var win = new TWindow();
+            win.DataContext = dc;
+            win.Closing += (a, b) => _wins.Remove(win);
+            _wins.Add(win);
+            return win;
+        }
+
+        private bool CheckWindow<TWindow>()
+            where TWindow: Window, new()
+        {
+            return _wins?.Any(x => x.GetType() == typeof(TWindow)) ?? false;
+        }
+
+        private void Focus<TWindow>()
+            where TWindow: Window, new()
+        {
+            var win = _wins.FirstOrDefault(y => y.GetType() == typeof(TWindow));
+            win?.Focus();
+        }
+
 
         #region Фильтр
 
         private ICommand showFiltersWindowCommand;
         private void SetupFilters(ColumnComponent[] allColumns)
         {
+            var existFilters = new List<FilterOption>();
+            SetupFilterFields(existFilters);
+
             filters = allColumns.Select(y =>
             {
-                var filter = FilerOptionSource.GetFilter<T>(y.BindingProperty, y.Header?.ToString());
+                var filter = existFilters.FirstOrDefault(x => x.Header == y.Header?.ToString());
+
+                if (filter == null)
+                {
+                    filter = FilerOptionSource.GetFilter<T>(y.BindingProperty, y.Header?.ToString());
+                }
+                else
+                {
+                    existFilters.Remove(filter);
+                }
+
                 filter.FilterValueChanged += Filter_FilterValueChanged;
                 return filter;
             }).
             ToArray();
         }
+        public int FiltersCount { get; private set; }
+        protected virtual void SetupFilterFields(List<FilterOption> list) { }
 
         List<IFilterOption> actualFilters = new List<IFilterOption>();
 
@@ -293,20 +388,31 @@ namespace ArchiveApp.Abstract
             {
                 actualFilters.Add(obj);
             }
-
             ItemsView.Filter = item => actualFilters.All(f => f.Filter(item));
             RefreshCollectionView();
         }
 
+        private void Vm_FilterCountChanged(int obj)
+        {
+            FiltersCount = obj;
+        }
+
         public ICommand ShowFiltersWindowCommand => showFiltersWindowCommand ??= new Command(x =>
         {
-            var vm = new FiltersViewModel();
-            vm.FilterOptions = filters;
-
-            var win = new FiltersWindow();
-            win.DataContext = vm;
-            win.Show();
+            if (!CheckWindow<FiltersWindow>())
+            {
+                var vm = new FiltersViewModel();
+                vm.FilterOptions = filters;
+                vm.FilterCountChanged += Vm_FilterCountChanged;
+                var win = GetNewWindow<FiltersWindow>(vm);
+                win.Show();
+            }
+            else
+            {
+                Focus<FiltersWindow>();
+            }
         });
+
 
         FilterOption[] filters;
 

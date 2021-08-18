@@ -50,11 +50,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="CustomControls">
-      <HintPath>..\..\..\WindowsFormsApp1\CustomControls\bin\Debug\CustomControls.dll</HintPath>
-    </Reference>
     <Reference Include="MVVM_Core">
-      <HintPath>..\..\..\..\..\..\Библиотеки\MVVM_Core\bin\Debug\MVVM_Core.dll</HintPath>
+      <HintPath>bin\Debug\netcoreapp3.1\MVVM_Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 

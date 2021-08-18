@@ -8,7 +8,7 @@
         xmlns:c="clr-namespace:ArchiveApp.Resources" 
         d:DataContext="{d:DesignInstance Type=vm:ProtocolViewModel}"
         mc:Ignorable="d"
-        Title="Протокол" Height="600" Width="580">
+        Title="Протокол" Height="1050" Width="580">
 
         
     
@@ -362,10 +362,10 @@
                         <TextBlock Style="{DynamicResource TextBlock_H3}" 
                                Margin="10 0 0 0" 
                                Visibility="{Binding IsEdit, Converter={StaticResource BoolToVisInvert}}"
-                               Text="Добавить"/>
+                               Text="Добавить протокол"/>
                         <TextBlock  Style="{DynamicResource TextBlock_H3}"
                                     Visibility="{Binding IsEdit, Converter={StaticResource BoolToVis}}" 
-                                    Margin="10 0 0 0" Text="Редактировать"/>
+                                    Margin="10 0 0 0" Text="Редактировать протокол"/>
                     </StackPanel>
                 </Button>
             </DockPanel>

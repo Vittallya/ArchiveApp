@@ -20,11 +20,11 @@ namespace ArchiveApp.Services
             File.WriteAllText(FILE_NAME_XML, data);
         }
 
-        public T Deserialize<T>()
+        public async Task<T> Deserialize<T>()
         {
             XmlSerializer serializer = new XmlSerializer(typeof(T));
             
-            using(FileStream fs = new FileStream(FILE_NAME_XML, FileMode.Open, FileAccess.Read))
+            await using(FileStream fs = new FileStream(FILE_NAME_XML, FileMode.Open, FileAccess.Read))
             {
                 return (T)serializer.Deserialize(fs);
             }

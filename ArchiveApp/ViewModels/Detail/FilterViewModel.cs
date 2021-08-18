@@ -14,8 +14,15 @@ namespace ArchiveApp.ViewModels
         private ICommand addFilterControl;
         private ICommand removeFilterControl;
         private ICommand clearAllFilterControls;
-        
+
+        public event Action<int> FilterCountChanged;
         public FilterOption[] FilterOptions { get; set; }
+
+        private void OnFilterCountChanged()
+        {
+            int count = FilterOptions.Sum(f => f.FilterControls.Count);
+            FilterCountChanged?.Invoke(count);
+        }
 
         public ICommand AddFilterControl => addFilterControl ??= new Command(x =>
         {
@@ -23,6 +30,7 @@ namespace ArchiveApp.ViewModels
             {
                 option.FilterControls.Add(FilerOptionSource.GetFilterControl(option));
             }
+            OnFilterCountChanged();
         });
 
         public ICommand RemoveFilterControl => removeFilterControl ??= new Command(x =>
@@ -31,34 +39,30 @@ namespace ArchiveApp.ViewModels
             {
                 control.FilterOption.FilterControls.Remove(control);
                 if(!control.IsClear)
-                    control.FilterOption.OnFilterChanged();   
+                    control.FilterOption.OnFilterChanged();
             }
+            OnFilterCountChanged();
         });
 
         public ICommand ClearAllFilterControls => clearAllFilterControls ??= new Command(x =>
         {
-            bool isUpdate = false;
-
-
             if (x is FilterOption option)
             {
-                isUpdate = option.FilterControls.Any(c => !c.IsClear);
                 option.FilterControls.Clear();
             }
             else
             {
-                isUpdate = FilterOptions.Any(y => y.FilterControls.Any(z => !z.IsClear));
                 for (int i = 0; i < FilterOptions.Length; i++)
                 {
                     var opt = FilterOptions[i];
                     opt.FilterControls.Clear();
                 }
             }
-            if (isUpdate && FilterOptions.Length > 0)
+            if (FilterOptions.Length > 0)
             {
                 FilterOptions[0].OnFilterChanged();
             }
-
+            OnFilterCountChanged();
         });
     }
 }

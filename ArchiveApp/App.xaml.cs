@@ -23,6 +23,7 @@ namespace ArchiveApp
             builder.UseStartup<BL.Startup>();
 
             ViewModelLocator.SetupServiceProvider(builder.BuidSeriveProvider());
+            this.ShutdownMode = ShutdownMode.OnMainWindowClose;
             base.OnStartup(e);
         }
     }

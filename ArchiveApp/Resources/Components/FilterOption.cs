@@ -97,7 +97,11 @@ namespace ArchiveApp.Resources.Components
 
     public class StringFilterOption: FilterOption
     {
-        public Array ItemsSource { get; }
+        public Array ItemsSource { get; set; }
+
+        public bool IsVariants { get; set; }
+        public DependencyProperty ToProperty { get; internal set; }
+        public string DisplayMember { get; internal set; }
 
         public StringFilterOption(string p, string h, Func<object, object> propertyInfo, Type pr) :base(p, h, propertyInfo, pr)
         {  }
@@ -227,14 +231,14 @@ namespace ArchiveApp.Resources.Components
             if (a.FilterValue.GetType() == value.GetType() &&
             a.FilterValue is IComparable filterValue && value is IComparable valueComp)
             {
-                int compare = a.SelectedIndex - 1;
+                int compare = a.SelectedHelperIndex - 1;
 
 
                 bool res = valueComp.CompareTo(filterValue) == compare;
 
-                if (a.SelectedIndex > 2)
+                if (a.SelectedHelperIndex > 2)
                 {
-                    int compareOr = a.SelectedIndex == 4 ? 1 : -1;
+                    int compareOr = a.SelectedHelperIndex == 4 ? 1 : -1;
                     return res || valueComp.CompareTo(filterValue) == compareOr;
                 }
                 return res;
@@ -245,6 +249,25 @@ namespace ArchiveApp.Resources.Components
 
     }
 
+    public class SelectionFilerOption : FilterOption
+    {
+        public SelectionFilerOption(string property,
+                                   string header,
+                                   Func<object, object> valueGetter,
+                                   Type pType) : base(property, header, valueGetter, pType)
+        {
+        }
+
+        public string[] Selection { get; set; }
+
+        public Func<object, object, bool> Predicate { get; set; }
+        public DependencyProperty ToProperty { get; internal set; }
+
+        protected override bool OnFilter(object value, FilterControl control)
+        {
+            return Predicate(value, control.FilterValue);
+        }
+    }
 
     public static class FilerOptionSource
     {
@@ -254,6 +277,29 @@ namespace ArchiveApp.Resources.Components
             var pType = filter.PropertyType;
 
             var filterControl = new FilterControl(filter);
+
+            if(option is SelectionFilerOption sel)
+            {
+                filterControl.Control = new ComboBox { ItemsSource = sel.Selection, DataContext = filterControl };
+                filterControl.Control.SetBinding(sel.ToProperty, 
+                    new Binding("FilterValue") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+                return filterControl;
+            }
+            else if(option is StringFilterOption str && str.IsVariants)
+            {
+                filterControl.Control = new TextBoxList { 
+                    ItemsSource = str.ItemsSource, 
+                    DataContext = filterControl ,
+                    DisplayMemberPath = str.DisplayMember,
+                };
+                //filterControl.Control.SetBinding(str.ToProperty,
+                //    new Binding("FilterValue") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+                
+                filterControl.Control.SetBinding(TextBoxList.TextProperty,
+                    new Binding("FilterValue") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+                return filterControl;
+
+            }
 
             if(pType.IsValueType &&
                 pType.GetInterfaces().Any(x => x == typeof(IComparable)))
@@ -280,11 +326,70 @@ namespace ArchiveApp.Resources.Components
             //filter.FilterControls.Add(filterControl);
         }
 
+        public static FilterOption GetSelectionOption<T>(string property, string header, string[] variants, 
+            Func<DependencyProperty> bProp, Func<object, object, bool> predicate)
+        {
+            Type type = typeof(T);
+
+            var info = GetPropertyInfo(ref property, ref type, out Func<object, object> valueGetter);
+
+            var pType = info.PropertyType;
+
+
+            SelectionFilerOption filter = new SelectionFilerOption(property, header, valueGetter, pType)
+            {
+                Selection = variants,
+                Predicate = predicate,
+                ToProperty = bProp(),
+            };
+            return filter;
+        }
+        public static FilterOption GetStringVariantsOption<T>(string property, 
+            string header, 
+            Array variants, string displayMember)
+        {
+            Type type = typeof(T);
+
+            var info = GetPropertyInfo(ref property, ref type, out Func<object, object> valueGetter);
+
+            var pType = info.PropertyType;
+
+
+            StringFilterOption filter = new StringFilterOption(property, header, valueGetter, pType)
+            {
+                IsVariants = true,
+                ItemsSource = variants,
+                DisplayMember = displayMember,
+            };
+            return filter;
+        }
+
         public static FilterOption GetFilter<T>(string property, string header)
         {
             Type type = typeof(T);
 
-            Func<object, object> valueGetter = default;
+            var info = GetPropertyInfo(ref property, ref type, out Func<object, object> valueGetter);
+
+            var pType = info.PropertyType;
+
+            FilterOption filter = default;
+
+            if (pType.GetInterfaces().Any(x => x == typeof(IComparable)))
+            {
+                if (pType == typeof(string))
+                {
+                    filter = new StringFilterOption(property, header, valueGetter, pType);
+                }
+                else
+                {
+                    filter = new ComparableFilterOption(property, header, valueGetter, pType);
+                }
+            }
+            return filter;
+        }
+
+        private static PropertyInfo GetPropertyInfo(ref string property, ref Type type, out Func<object, object> valueGetter)
+        {
             PropertyInfo info = default;
 
             if (property.Contains('.'))
@@ -322,23 +427,7 @@ namespace ArchiveApp.Resources.Components
                 info = type.GetProperty(property);
                 valueGetter = item => info.GetValue(item);
             }
-
-            var pType = info.PropertyType;
-
-            FilterOption filter = default;            
-
-            if (pType.GetInterfaces().Any(x => x == typeof(IComparable)))
-            {
-                if (pType == typeof(string))
-                {
-                    filter = new StringFilterOption(property, header, valueGetter, pType);
-                }
-                else
-                {
-                    filter = new ComparableFilterOption(property, header, valueGetter, pType);
-                }
-            }
-            return filter;
+            return info;
         }
     }
 }

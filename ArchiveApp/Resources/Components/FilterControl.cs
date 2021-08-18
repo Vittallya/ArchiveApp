@@ -8,7 +8,7 @@ namespace ArchiveApp.Resources.Components
     public class FilterControl
     {
         private object filterValue;
-        private int selectedIndex;
+        private int selectedHelperIndex;
 
         public FrameworkElement Control { get; set; }
 
@@ -32,10 +32,12 @@ namespace ArchiveApp.Resources.Components
         public string[] HelpingOptions { get; set; } = new string[]
             {"Меньше", "Равно", "Больше", "Меньше или равно", "Больше или равно"};
 
-        public int SelectedIndex 
+
+
+        public int SelectedHelperIndex 
         { 
-            get => selectedIndex;
-            set { selectedIndex = value; FilterOption.OnFilterChanged(); }       
+            get => selectedHelperIndex;
+            set { selectedHelperIndex = value; FilterOption.OnFilterChanged(); }       
         }
 
         public object FilterValue
