@@ -24,6 +24,7 @@ namespace BL.DbHandling
 
         public async Task TryLoad(bool createDb)
         {
+            IsCompleted = false;
             _createDb = createDb;
             thread = new Thread(LoadMethod);
             thread.Start();            

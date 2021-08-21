@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models;
 
 namespace Models.Migrations
 {
     [DbContext(typeof(AppContext))]
-    partial class AppContextModelSnapshot : ModelSnapshot
+    [Migration("20210819173704_edits")]
+    partial class edits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,6 +57,10 @@ namespace Models.Migrations
                     b.Property<string>("Party")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ResidentPlace")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<string>("Surname")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -87,10 +93,6 @@ namespace Models.Migrations
 
                     b.Property<string>("Punishment")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResidentPlace")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Resolution")
                         .HasColumnType("nvarchar(max)");

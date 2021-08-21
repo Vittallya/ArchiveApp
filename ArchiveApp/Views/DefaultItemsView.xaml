@@ -269,6 +269,10 @@
             SelectionMode="Extended"
             ItemsSource="{Binding Items, UpdateSourceTrigger=PropertyChanged}"
             FontSize="15"
+            VirtualizingPanel.CacheLength="15"
+            VirtualizingPanel.IsVirtualizing="True"
+            VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+            VirtualizingPanel.VirtualizationMode="Recycling"            
             View="{Binding View, UpdateSourceTrigger=PropertyChanged}">
 
 

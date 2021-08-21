@@ -57,13 +57,13 @@ namespace BL.DbHandling
             //    item.People.EducationId = item.People.Education.Id;
             //    item.People.Education = null;
             //}
-            var people = item.People;
+            //var people = item.People;
 
-            if (item.People.Id > 0)
-            {
-                item.PeopleId = item.People.Id;
-                item.People = null;
-            }
+            //if (item.People.Id > 0)
+            //{
+            //    item.PeopleId = item.People.Id;
+            //    item.People = null;
+            //}
         }
 
         public bool Add(Protocol item)
@@ -81,23 +81,19 @@ namespace BL.DbHandling
             }
         }
 
-        public async Task<IEnumerable<Protocol>> LoadItems()
+        public async Task<IEnumerable<Protocol>> LoadItemsAsync()
         {
             await context.Protocols.Include(p => p.People).LoadAsync();
             return context.Protocols.Include(p => p.People);
         }
 
-        Action invoker;
-
-        public async Task<bool> Update(Protocol item)
+        public bool Update(Protocol item)
         {
             try
             {
                 //invoker?.Invoke();
 
                 context.Protocols.Update(item);
-                await context.SaveChangesAsync();
-                context.ChangeTracker.Clear();
                 //await using(var context = new AppContextFactory().CreateDbContext(null))
                 //{
                 //    context.Protocols.Update(item);
@@ -121,8 +117,8 @@ namespace BL.DbHandling
 
         public bool Remove(Protocol[] items, bool isRemoveAll)
         {
-            using (var context = new AppContextFactory().CreateDbContext(null))
-            {
+            //using (var context = new AppContextFactory().CreateDbContext(null))
+            //{
                 if (isRemoveAll)
                 {
                     context.RemoveRange(items.Select(x => x.People).ToArray());
@@ -136,23 +132,14 @@ namespace BL.DbHandling
 
                 context.Protocols.RemoveRange(items);
                 context.SaveChanges();
-            }
+            //}
             return true;
         }
 
-        public async Task<bool> SaveChanges()
+        public IEnumerable<Protocol> LoadItems()
         {
-            try
-            {
-                await context.SaveChangesAsync();
-                return true;
-            }
-            catch(Exception e)
-            {
-                Message = e.Message;
-                return false;
-            }
+            context.Protocols.Include(x => x.People).Load();
+            return context.Protocols.Include(x => x.People);
         }
-
     }
 }

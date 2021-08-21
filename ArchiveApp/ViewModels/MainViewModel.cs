@@ -112,7 +112,6 @@ namespace ArchiveApp.ViewModels
         private async Task InitAsync()
         {
             IsAnimVisible = true;
-            Message = "Пизда!";
             if (!await InitDb())
             {
                 ConnectionStatus = ConnectionStatus.Error;

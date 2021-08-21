@@ -67,7 +67,6 @@ namespace Models
                 {
                     ActualConnectionString = str;
                     File.WriteAllText(FILE_NAME, str);
-                    connections = null;
                     return true;
                 }
             }

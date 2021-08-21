@@ -13,6 +13,7 @@ using MVVM_Core.Validation;
 using System.Text.RegularExpressions;
 using ArchiveApp.Services;
 using ArchiveApp.Resources.Components;
+using System.Threading.Tasks;
 
 namespace ArchiveApp.ViewModels
 {
@@ -47,12 +48,12 @@ namespace ArchiveApp.ViewModels
 
         public void OnAdd()
         {            
-            Protocol = new Protocol() { ProtocolDateTime = new DateTime(1937, 10, 10)};
+            Protocol = new Protocol() { ProtocolYear = Years[86], Punishment = Punishments[2]};
             IsNewPeopleRecord = true;
 
             if (People == null)
             {
-                People = new People { Gender = true, BirthDate = new DateTime(1920, 10, 10) };
+                People = new People { Gender = true, BirthYear = Years[46] };
             }
             else
             {
@@ -74,7 +75,7 @@ namespace ArchiveApp.ViewModels
             IsNewPeopleRecord = false;
             IsEdit = true;
         }
-        private void OnAccept()
+        private async void OnAccept()
         {
             ErrorMessage = null;
             if (_isValidation && !validator.IsCorrect)
@@ -83,15 +84,9 @@ namespace ArchiveApp.ViewModels
                 return;
             }
 
-            string[] fio = Fio.Split(' ');
-            People.Surname = fio[0];
-            People.Name = fio[1];
-            People.Otchestvo = fio[2];
-            //People.BirthPlace = BirthPlace;
-
             Protocol.People = People;
 
-            Accepted?.Invoke(this);
+            await Accepted?.Invoke(this);
 
 
             if (People.Nationality == null)
@@ -140,8 +135,9 @@ namespace ArchiveApp.ViewModels
             {
                 var list = AllPeoples.ToList();
                 list.Add(People);
-                AllPeoples = list.ToArray();
+                AllPeoples = list.ToArray();                
                 People = null;
+                //todo непонятная строка
             }
 
             if (IsEdit)
@@ -162,17 +158,19 @@ namespace ArchiveApp.ViewModels
 
         #region Команды
 
-        public event Action<ProtocolViewModel> Accepted;
+        public event Func<ProtocolViewModel, Task> Accepted;
         public event Action<ProtocolViewModel> Canceled;
 
         private ICommand changeToNewRecordCommand;
         private ICommand changeToExistRecordCommand;
         private ICommand acceptCommand;
         private ICommand cancelCommand;
+        private ICommand clerSearchCommand;
         public ICommand AcceptCommand => acceptCommand ??= new Command(x => OnAccept());
         public ICommand CancelCommand => cancelCommand ??= new Command(x => OnCancel());
         public ICommand ChangeToNewRecordCommand => changeToNewRecordCommand ??= new Command(x => ChangeToNewRecord());
         public ICommand ChangeToExistRecordCommand => changeToExistRecordCommand ??= new Command(x => ChangeToExistRecord());
+        public ICommand ClearSearchCommand => clerSearchCommand ??= new Command(x => ClearSearch());
 
 
         #endregion
@@ -185,23 +183,27 @@ namespace ArchiveApp.ViewModels
             People.Id = 0;
         }
 
+        public bool IsClearBtnVis => !IsNewPeopleRecord && peopleSearched != null;
+
+        public bool IsFioVis => !IsNewPeopleRecord && peopleSearched == null;
+
         public void ChangeToExistRecord()
         {
             IsNewPeopleRecord = false;
             PeopleUpdate(PeopleSearched);
         }
+
+        public void ClearSearch()
+        {
+            IsFiledVisible = false;
+            PeopleSearched = null;
+        }
+
         public void PeopleUpdate(People people)
         {
             if (people != null)
-            {              
-                //people.Nationality = AllNationalities.FirstOrDefault(x => x.Id == people.NationalityId);
-                //people.Party = AllParty.FirstOrDefault(x => x.Id == people.PartyId);
-                //people.Education = AllEducation.FirstOrDefault(x => x.Id == people.EducationId);
-
+            {                              
                 People = people.Clone() as People;
-                //BirthPlace = People.BirthPlace;
-                //Natio = AllNationalities.FirstOrDefault(x => x.Value == Protocol.People.Nationality);
-
                 IsFiledVisible = true;
             }
             else
@@ -220,13 +222,10 @@ namespace ArchiveApp.ViewModels
         {
             get => peopleSearched;
             set
-            {
-                if (value != null)
-                {
-                    peopleSearched = value?.Clone() as People;
-                    OnPropertyChanged();
-                    PeopleUpdate(peopleSearched);
-                }
+            {                
+                peopleSearched = value?.Clone() as People;
+                OnPropertyChanged();
+                PeopleUpdate(peopleSearched);                
             }
         }
 
@@ -260,7 +259,6 @@ namespace ArchiveApp.ViewModels
         }
 
         public People[] AllPeoples { get; private set; }
-        //todo если окно остается открытым, и была добавлена запись о человеке, то это свойство надо обновить
         public RootUnitsItem[] AllNationalities { get; set; }
         public RootUnitsItem[] AllFamily { get; set; }
         public RootUnitsItem[] AllSocial { get; set; }
@@ -268,6 +266,10 @@ namespace ArchiveApp.ViewModels
         public RootUnitsItem[] AllParty { get; set; }
         public RootUnitsItem[] AllOrgans { get; set; }
 
+
+        public short[] Years { get; } = Enumerable.Range(1850, 141).Select(x => (short)x).ToArray();
+
+        public string[] Punishments { get; } = new string[] { "Расстрел", "10 лет", "8 лет", "5 лет", "3 года", "Отправлено на доследование", "Другое" };
 
 
         public Dictionary<string, bool> Genders { get; } = new Dictionary<string, bool>
@@ -303,11 +305,11 @@ namespace ArchiveApp.ViewModels
             _errorFunc = errorFunc ?? DefaultErrorHandler;
             validator = new Validator();
 
-            //var regex = new Regex(@"[а-я]{1,}\s{1,}[а-я]{1,}\s{1,}[а-я]{1,}", RegexOptions.Compiled);
 
-            validator.ForProperty(() => Fio, "ФИО").NotEmpty().
-                Match(@"[А-Яа-я]{1,}\s{1}[А-Яа-я]{1,}\s{1}[А-Яа-я]{1,}", "Поле \"ФИО\" должно содержать фамилию, имя и отчество, вписанные через пробел");
+            validator.ForProperty(() => Fio, "").Predicate(y => IsNewPeopleRecord || peopleSearched != null, 
+                "Находясь в режиме существующей записи о человеке необходимо выбрать запись о человеке");
 
+            validator.ForProperty(() => People.Surname, "Фамилия").NotEmpty().LengthLessThan(150);
             validator.ForProperty(() => People.BirthPlace, "Место рождения").NotEmpty().LengthLessThan(150);
             validator.ForProperty(() => PeopleSearched?.ToString(), "ФИО").Predicate(x => !string.IsNullOrEmpty(x) || IsNewPeopleRecord,
                 "Необходимо выбрать существующую запись о человеке в поле \"ФИО\" либо перейти в режим добавления записи");
@@ -329,16 +331,17 @@ namespace ArchiveApp.ViewModels
 
             validator.ForProperty(() => SocialText, "").
                 Predicate(x => !string.IsNullOrEmpty(x) || Protocol.Social != null,
-                "Для поля \"Социальное положение на момент ареста\" необходимо выбрать значение из существующих или написать новое");
+                "Для поля \"Кем работал(-а) на момент ареста\" необходимо выбрать значение из существующих или написать новое");
 
             validator.ForProperty(() => OrganText, "").
                 Predicate(x => !string.IsNullOrEmpty(x) || Protocol.Organ != null,
                 "Для поля \"Судебный орган\" необходимо выбрать значение из существующих или написать новое");
 
-            validator.ForProperty(() => Protocol.ProtocolNumber, "Номер протокола").NotEmpty();
+            validator.ForProperty(() => Protocol.ProtocolNumber, "По каким статьям УК РСФСР осужден").NotEmpty();
+            validator.ForProperty(() => Protocol.ResidentPlace, "Место проживания на момент ареста").NotEmpty();
             validator.ForProperty(() => Protocol.Punishment, "Наказание").NotEmpty();
             validator.ForProperty(() => Protocol.Resolution, "Постановление").NotEmpty();
-            validator.ForProperty(() => Protocol.Source, "Источник").NotEmpty();
+            //validator.ForProperty(() => Protocol.Source, "Источник").NotEmpty();
         }
 
         #endregion

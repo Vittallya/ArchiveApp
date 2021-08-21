@@ -14,6 +14,7 @@ using ArchiveApp.Resources.Components;
 using ArchiveApp.Services;
 using ArchiveApp.Views;
 using BL.Abstract;
+using BL.DbHandling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Models;
@@ -28,6 +29,8 @@ namespace ArchiveApp.ViewModels
         private readonly Validator validator;
         private readonly WindowsService windowsService;
 
+        private People[] peoples;
+
         protected override void SetupFilterFields(List<FilterOption> list)
         {
             var natio = dataService.GetUnits("natio");
@@ -36,6 +39,11 @@ namespace ArchiveApp.ViewModels
             var family = dataService.GetUnits("family");
             var soc = dataService.GetUnits("social");
             var org = dataService.GetUnits("organs");
+
+
+            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Surname", "Фамилия", peoples, "Surname"));
+            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Name", "Имя", peoples, "Name"));
+            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Otchestvo", "Отчество", peoples, "Otchestvo"));
 
             list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Nationality", "Национальность", natio, "Value"));
             list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Education", "Образование", ed, "Value"));
@@ -101,7 +109,7 @@ namespace ArchiveApp.ViewModels
                 detailVm.Accepted += DetailVm_Accepted;
                 detailVm.Canceled += DetailVm_Canceled;
                 detailVm.SetupValidator();
-                detailVm.LoadItemsScources(appContext.Peoples.ToArray());
+                detailVm.LoadItemsScources(peoples);
                 _window.DataContext = detailVm;
                 return detailVm;
             }
@@ -117,15 +125,17 @@ namespace ArchiveApp.ViewModels
             _window?.Close();
         }
 
-        private async void DetailVm_Accepted(ProtocolViewModel obj)
+        private async Task DetailVm_Accepted(ProtocolViewModel obj)
         {
             var copy = obj.Protocol.Clone() as Protocol;
-            //await handler.Update(obj.Protocol);
-            if(!await handler.Update(copy))
+            if(!handler.Protocols.Update(copy))
             {
-                MessageBox.Show(handler.Message);
+                MessageBox.Show(handler.Protocols.Message);
                 return;
             }
+            await handler.SaveAsync();
+
+            hasChanges = true;
 
             if (obj.IsEdit)
             {
@@ -141,9 +151,7 @@ namespace ArchiveApp.ViewModels
             if (!obj.IsStayActive)
             {
                 _window.Close();
-            }
-            //ItemsView.DeferRefresh();
-            //RefreshCollectionView();            
+            }       
         }
 
         int indexOfEditable;
@@ -169,7 +177,7 @@ namespace ArchiveApp.ViewModels
                         return;
                 }
 
-                handler.Remove(items, IsRemoveAll);
+                handler.Protocols.Remove(items, IsRemoveAll);
                 Reload();
                 //for (int i = 0; i < items.Length; i++)
                 //{
@@ -183,12 +191,11 @@ namespace ArchiveApp.ViewModels
             }
         }
 
-        public ProtocolItemsViewModel(AppContext appContext,
-                                      PageService pageService,
+        public ProtocolItemsViewModel(PageService pageService,
                                       Validator validator,
                                       DropDownDataService dataService, 
                                       WindowsService windowsService,
-                                        IDataHandler<Protocol> protocolHandler) : base(appContext, pageService, dataService, protocolHandler)
+                                        UnitOfWork protocolHandler) : base(pageService, dataService, protocolHandler)
         {
             this.validator = validator;
             this.windowsService = windowsService;
@@ -206,20 +213,33 @@ namespace ArchiveApp.ViewModels
             grid.Columns.Add(new GridViewColumn() { Header = "Пол", DisplayMemberBinding = new Binding("People.Gender") { Converter = new Converters.ConverterGenderShort() } });
             grid.Columns.Add(new GridViewColumn() { Header = "Национальность", DisplayMemberBinding = new Binding("People.Nationality") });
             grid.Columns.Add(new GridViewColumn() { Header = "Место рождения", DisplayMemberBinding = new Binding("People.BirthPlace") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Дата рождения", DisplayMemberBinding = new Binding("People.BirthDate") { StringFormat = "dd.MM.yyyy"} });
+            grid.Columns.Add(new GridViewColumn() { Header = "Год рождения", DisplayMemberBinding = new Binding("People.BirthYear")});
             grid.Columns.Add(new GridViewColumn() { Header = "Образование", DisplayMemberBinding = new Binding("People.Education") });
             grid.Columns.Add(new GridViewColumn() { Header = "Партийность", DisplayMemberBinding = new Binding("People.Party")});
             grid.Columns.Add(new GridViewColumn() { Header = "Семейное положение", DisplayMemberBinding = new Binding("People.Family")});
-            grid.Columns.Add(new GridViewColumn() { Header = "Соц. полож. на момент ареста", DisplayMemberBinding = new Binding("Social") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Номер протокола", DisplayMemberBinding = new Binding("ProtocolNumber") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Кем работал на момент ареста", DisplayMemberBinding = new Binding("Social") });
+            grid.Columns.Add(new GridViewColumn() { Header = "По каким статьям УК РСФСР осужден", DisplayMemberBinding = new Binding("ProtocolNumber") });
             grid.Columns.Add(new GridViewColumn() { Header = "Судебный орган", DisplayMemberBinding = new Binding("Organ") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Дата протокола", DisplayMemberBinding = new Binding("ProtocolDateTime") { StringFormat = "dd.MM.yyyy" } });
-            grid.Columns.Add(new GridViewColumn() { Header = "Наказание", DisplayMemberBinding = new Binding("Punishment") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Год осуждения", DisplayMemberBinding = new Binding("ProtocolYear") });
+            grid.Columns.Add(new GridViewColumn() { Header = "Приговор", DisplayMemberBinding = new Binding("Punishment") });
             grid.Columns.Add(new GridViewColumn() { Header = "Постановление", DisplayMemberBinding = new Binding("Resolution") });
             grid.Columns.Add(new GridViewColumn() { Header = "Источник", DisplayMemberBinding = new Binding("Source") });
 
 
             return grid;
+        }
+
+        bool hasChanges = true;
+
+        protected override async Task<IEnumerable<Protocol>> LoadItems()
+        {
+            var a = await handler.Protocols.LoadItemsAsync();
+            if (hasChanges)
+            {
+                peoples = a.Select(x => x.People).ToArray();
+            }
+
+            return a;
         }
     }
 }

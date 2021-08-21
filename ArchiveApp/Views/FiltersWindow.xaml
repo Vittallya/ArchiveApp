@@ -8,7 +8,7 @@
         xmlns:vm="clr-namespace:ArchiveApp.ViewModels"
         d:DataContext="{d:DesignInstance Type=vm:FiltersViewModel}"
         ResizeMode="CanResize"
-        Title="Настрока фильтрации" Height="550" Width="500">
+        Title="Настрока фильтрации" Height="630" Width="500">
     <Grid>
 
         <Grid.RowDefinitions>
@@ -42,10 +42,10 @@
 
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Expander x:Name="exp" Margin="0 3" >
+                            <Expander Panel.ZIndex="-1" x:Name="exp" Margin="0 3" >
 
                                 <Expander.Header>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Panel.ZIndex="-1" Orientation="Horizontal">
                                         <TextBlock FontSize="16" Text="{Binding Header}"/>
                                         <TextBlock FontSize="16" 
                                            FontWeight="Bold"
@@ -76,9 +76,9 @@
                                 </Expander.Header>
 
                                 <Grid>
-                                    <StackPanel  Margin="15 5 0 0" >
+                                    <StackPanel Margin="15 5 0 0" >
 
-                                        <ItemsControl ItemsSource="{Binding FilterControls}">
+                                        <ItemsControl Panel.ZIndex="1" ItemsSource="{Binding FilterControls}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <DockPanel Margin="0 3" >
@@ -115,7 +115,7 @@
                                                         </Button>
 
                                                         <ContentControl
-                                                        Panel.ZIndex="100"
+                                                        Panel.ZIndex="20"
                                                         Content="{Binding Control}"/>
 
 
@@ -125,12 +125,13 @@
                                         </ItemsControl>
 
                                         <Button 
-                                Margin="0 3"
-                                HorizontalAlignment="Center"
-                                    Style="{DynamicResource LinkButton}"
-                                    CommandParameter="{Binding}"
-                                    Command="{Binding DataContext.AddFilterControl, 
-                                    RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
+                                            Margin="0 3"
+                                            HorizontalAlignment="Center"
+                                            Panel.ZIndex="-1"
+                                                Style="{DynamicResource LinkButton}"
+                                                CommandParameter="{Binding}"
+                                                Command="{Binding DataContext.AddFilterControl, 
+                                                RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}}">
                                             <Grid>
                                                 <TextBlock 
                                         Visibility="{Binding FilterControls.Count, Converter={StaticResource ZeroToVis}}"

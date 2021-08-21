@@ -22,7 +22,7 @@ namespace ArchiveApp.Resources.Components
         {
             get
             {
-                return FilterValue == null || FilterValue is string str && str.Length == 0;
+                return FilterValue == null || FilterValue is string str && (str.Length == 0 || str == "*");
             }
         }
 
@@ -32,7 +32,7 @@ namespace ArchiveApp.Resources.Components
         public string[] HelpingOptions { get; set; } = new string[]
             {"Меньше", "Равно", "Больше", "Меньше или равно", "Больше или равно"};
 
-
+        public IComparable SelectedItem { get; set; }
 
         public int SelectedHelperIndex 
         { 
@@ -50,4 +50,7 @@ namespace ArchiveApp.Resources.Components
             }
         }
     }
+
+
+
 }

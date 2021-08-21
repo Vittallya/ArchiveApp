@@ -4,6 +4,7 @@ using ArchiveApp.Services;
 using ArchiveApp.ViewModels;
 using ArchiveApp.Views;
 using BL.Abstract;
+using BL.DbHandling;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using MVVM_Core;
@@ -26,17 +27,14 @@ namespace ArchiveApp.Abstract
     public abstract class DefaultItemsViewModel<T> : BaseViewModel, IDefaultItemsViewModel
         where T : class
     {
-        protected readonly AppContext appContext;
         protected readonly PageService pageService;
         protected readonly DropDownDataService dataService;
-        protected readonly IDataHandler<T> handler;
+        protected readonly UnitOfWork handler;
 
-        public DefaultItemsViewModel(AppContext appContext,
-                                     PageService pageService,
+        public DefaultItemsViewModel(PageService pageService,
                                      DropDownDataService dataService,
-                                     IDataHandler<T> handler)
+                                     UnitOfWork handler)
         {
-            this.appContext = appContext;
             this.pageService = pageService;
             this.dataService = dataService;
             this.handler = handler;
@@ -135,10 +133,12 @@ namespace ArchiveApp.Abstract
         {
             LoadingAnimation = true;
             //Items = new ObservableCollection<T>(await OnLoadItems(appContext));
-            Items = new ObservableCollection<T>(await handler.LoadItems());
+            Items = new ObservableCollection<T>(await LoadItems());
             RefreshCollectionView();
             LoadingAnimation = false;
         }
+
+        protected abstract Task<IEnumerable<T>> LoadItems();
 
         protected abstract void OnAdd();
         protected abstract void OnEdit(T item);
@@ -402,7 +402,7 @@ namespace ArchiveApp.Abstract
             if (!CheckWindow<FiltersWindow>())
             {
                 var vm = new FiltersViewModel();
-                vm.FilterOptions = filters;
+                vm.SetupFilterOptions(filters);
                 vm.FilterCountChanged += Vm_FilterCountChanged;
                 var win = GetNewWindow<FiltersWindow>(vm);
                 win.Show();

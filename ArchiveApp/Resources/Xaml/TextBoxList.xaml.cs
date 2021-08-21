@@ -324,7 +324,7 @@ namespace ArchiveApp.Resources
 
         private IEnumerable<SearchItem> UpdateSearch()
         {
-            IEnumerable<SearchItem> res;
+            IEnumerable<SearchItem> res = default;
             string text = Text?.ToLower();
 
 
@@ -345,7 +345,7 @@ namespace ArchiveApp.Resources
                     SelectedItem = search.FirstOrDefault(x => string.Equals(x.DisplayLower, text)).Item;
                 }
             }
-            else
+            else if(displaySource != null)
             {
                 SelectedItem = null;
                 SelectedIndex = -1;
@@ -437,10 +437,6 @@ namespace ArchiveApp.Resources
 
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
-            //if(search == null)
-            //    OnFocused();
-
-
             var res = UpdateSearch();
             isPaste = true;
 
@@ -457,7 +453,7 @@ namespace ArchiveApp.Resources
             }
             else
             {
-                listView.Visibility = Visibility.Collapsed;
+                toggle.IsChecked = false;
             }
             tb.Focus();
         }
@@ -478,7 +474,6 @@ namespace ArchiveApp.Resources
             //}
             listView.Visibility = Visibility.Collapsed;
             //tb.Focus();
-            //todo Показать только те элементы, где есть совпадения по тексту
         }
 
         #region OnChangedStatic

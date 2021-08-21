@@ -16,7 +16,25 @@ namespace ArchiveApp.ViewModels
         private ICommand clearAllFilterControls;
 
         public event Action<int> FilterCountChanged;
-        public FilterOption[] FilterOptions { get; set; }
+        public FilterOption[] FilterOptions { get; private set; }
+        public Dictionary<short, FilterOption> NumeredFilterOptions { get; private set; } = new Dictionary<short, FilterOption>();
+
+
+        public void SetupFilterOptions(FilterOption[] options)
+        {
+            FilterOptions = options;
+
+            short leng = (short)FilterOptions.Length;
+
+            NumeredFilterOptions.Clear();
+
+            for (short i = (short)(leng - 1); i >= 0; i--)
+            {
+                NumeredFilterOptions.Add(i, FilterOptions[leng - i - 1]);
+            }
+
+        }
+
 
         private void OnFilterCountChanged()
         {

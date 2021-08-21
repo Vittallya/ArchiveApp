@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Models
 {
-    public class People: ICloneable
+    public class People: ICloneable, IComparable
     {
 
 
@@ -24,19 +24,11 @@ namespace Models
 
         [MaxLength(150)]
         public string BirthPlace { get; set; }
-        public DateTime BirthDate { get; set; }
+        public short BirthYear { get; set; }
         public string Nationality { get; set; }
         public string Education { get; set; }
         public string Party { get; set; }
         public string Family { get; set; }
-
-        //public virtual Nationality Nationality { get; set; }
-
-        //public virtual Education Education { get; set; }
-
-        //public virtual Party Party { get; set; }
-
-        //public virtual FamilyType Family { get; set; }
 
         [NotMapped]
         public string Fio => Surname + " " + Name + " " + Otchestvo;
@@ -44,6 +36,11 @@ namespace Models
         public object Clone()
         {
             return this.MemberwiseClone();
+        }
+
+        public int CompareTo(object obj)
+        {
+            return Id.CompareTo(obj);
         }
     }
     public class Nationality

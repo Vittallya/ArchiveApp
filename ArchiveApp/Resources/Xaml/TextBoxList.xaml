@@ -7,7 +7,7 @@
              mc:Ignorable="d"              
              x:Name="tbList">
     <StackPanel  
-                    Panel.ZIndex="15">
+                    Panel.ZIndex="100">
 
 
         <!--<ListBox 
@@ -18,7 +18,7 @@
             DisplayMemberPath="{Binding ElementName=tbList,Path=DisplayMemberPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemsSource="{Binding ElementName=tbList,Path=ItemsSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             Visibility="Collapsed"/>-->
-        <DockPanel x:Name="dock">
+        <DockPanel Panel.ZIndex="-1" x:Name="dock">
 
             <ToggleButton HorizontalAlignment="Right"
                               DockPanel.Dock="Right"                              
@@ -41,7 +41,7 @@
                     Focusable="True"        
                     x:Name="tb"/>
         </DockPanel>
-            <Canvas Background="White"  StackPanel.ZIndex="100">
+            <Canvas Background="White"  Panel.ZIndex="1000">
 
                 <ListView
                     Visibility="Collapsed"

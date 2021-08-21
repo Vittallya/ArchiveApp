@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         xmlns:vm="clr-namespace:ArchiveApp.ViewModels"
         d:DataContext="{d:DesignInstance Type=vm:FieldsViewModel}"
-        Height="500"
+        Height="590"
         Width="350"
         Title="Настройка столбцов">
     <Grid>

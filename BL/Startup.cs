@@ -14,7 +14,8 @@ namespace BL
         {
             serviceCollection.AddSingleton<DbConnectionHandler>();
             serviceCollection.AddTransient<AppContextLoader>();
-            serviceCollection.AddTransient<IDataHandler<Protocol>, ProtocolDataHandler>();
+            serviceCollection.AddSingleton<UnitOfWork>();
+            //serviceCollection.AddTransient<IDataHandler<Protocol>, ProtocolDataHandler>();
         }
     }
 }

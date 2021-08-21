@@ -11,7 +11,7 @@ using System.Windows.Data;
 
 namespace ArchiveApp.Resources.Components
 {
-
+    //todo изменить архитектуру фильтров: filterControl - должен быть наследуемым, а FilterOption - одним
     public interface IFilterOption
     {
         public string Header { get; }
@@ -99,6 +99,8 @@ namespace ArchiveApp.Resources.Components
     {
         public Array ItemsSource { get; set; }
 
+        public IComparable SelectedItem { get; set; }
+
         public bool IsVariants { get; set; }
         public DependencyProperty ToProperty { get; internal set; }
         public string DisplayMember { get; internal set; }
@@ -172,6 +174,9 @@ namespace ArchiveApp.Resources.Components
 
         protected override bool OnFilter(object value, FilterControl a)
         {
+            if (SelectedItem != null)
+                return SelectedItem.CompareTo(value) == 0;
+
             if (value is string str && a.FilterValue is string filterValue)
             {
                 filterValue = filterValue.ToLower();
@@ -292,11 +297,11 @@ namespace ArchiveApp.Resources.Components
                     DataContext = filterControl ,
                     DisplayMemberPath = str.DisplayMember,
                 };
-                //filterControl.Control.SetBinding(str.ToProperty,
-                //    new Binding("FilterValue") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
-                
+
                 filterControl.Control.SetBinding(TextBoxList.TextProperty,
                     new Binding("FilterValue") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+                filterControl.Control.SetBinding(TextBoxList.SelectedItemProperty,
+                    new Binding("SelectedItem") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
                 return filterControl;
 
             }

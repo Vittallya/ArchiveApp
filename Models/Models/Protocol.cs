@@ -6,17 +6,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Models
 {
-    public class Protocol: ICloneable
+    public class Protocol: ICloneable, IComparable
     {
         [Key]
         public int Id { get; set; }
         [MaxLength(85)]
         public string ProtocolNumber { get; set; }
-        public DateTime ProtocolDateTime { get; set; }
+        public short ProtocolYear { get; set; }
         public int PeopleId { get; set; }
         public string Punishment { get; set; }
         public string Resolution { get; set; }
         public string Source { get; set; }
+        [MaxLength(150)]
+        public string ResidentPlace { get; set; }
 
         public People People { get; set; }
         [MaxLength(100)]
@@ -30,6 +32,11 @@ namespace Models
             protocol.People = People.Clone() as People;
 
             return protocol;
+        }
+
+        public int CompareTo(object obj)
+        {
+            return Id.CompareTo(obj);
         }
     }
 
