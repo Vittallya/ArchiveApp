@@ -56,7 +56,6 @@ namespace ArchiveApp.Abstract
 
         public ViewBase View { get; private set; }
 
-        protected virtual Dictionary<string, string> Columns { get; set; }
 
         private void Init()
         {
@@ -66,17 +65,37 @@ namespace ArchiveApp.Abstract
 
         private void InitView()
         {
-            View = OnSetupView();
-            if (View is GridView gridView)
+            var builder = new ColumnsBuilder<T>();
+            OnSetupView(builder);
+
+            var gridView = new GridView();
+
+            allColumns = builder.GetColumnComponents();
+
+            for (int i = 0; i < allColumns.Length; i++)
             {
-                actualColumns = gridView.Columns;
-                removedColumns.Clear();
-                allColumns = actualColumns.Select(x => new ColumnComponent
-                { Column = x, Header = x.Header, BindingProperty = (x.DisplayMemberBinding as Binding)?.Path?.Path }).
-                ToArray();
-                SetupFilters(allColumns);
+                var col = allColumns[i];
+                gridView.Columns.Add(new GridViewColumn()
+                {
+                    Header = col.Header,
+                    DisplayMemberBinding = new Binding(col.BindingProperty)
+                    {
+                        Converter = col.Converter,
+                        StringFormat = col.StringFormat,
+                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    },
+                    
+                });
             }
+
+
+            actualColumns = gridView.Columns;
+            removedColumns.Clear();
+            SetupFilters(allColumns);
+            View = gridView;
         }
+
+
 
 
         #region Данные
@@ -198,76 +217,62 @@ namespace ArchiveApp.Abstract
         private ICommand columnsCommand;
         public ICommand ColumnsCommand => columnsCommand ??= new Command(x =>
         {
-            if (!CheckWindow<ColumnsWindow>())
-            {
+            //todo Разобраться со столбцами
+            //if (!CheckWindow<ColumnsWindow>())
+            //{
 
-                var vm = new FieldsViewModel();
-                vm.SetupColumns(actualColumns.
-                    Select(x => new ColumnComponent { Header = x.Header, IsVisible = true, Column = x }).
-                    Union(removedColumns.Select(y => new ColumnComponent { Header = y.Header, IsVisible = false, Column = y })));
+            //    var vm = new FieldsViewModel();
+            //    vm.SetupColumns(actualColumns.
+            //        Select(x => new ColumnComponent { Header = x.Header, IsVisible = true, Column = x }).
+            //        Union(removedColumns.Select(y => new ColumnComponent { Header = y.Header, IsVisible = false, Column = y })));
 
-                vm.ChangeVisible = new Command(v =>
-                {
-                    if (v is ColumnComponent comp)
-                    {
-                        if (comp.IsVisible)
-                        {
-                            actualColumns.Add(comp.Column);
-                            removedColumns.Remove(comp.Column);
-                        }
-                        else
-                        {
-                            actualColumns.Remove(comp.Column);
-                            removedColumns.Add(comp.Column);
-                        }
-                    }
-                });
 
-                vm.HideAllColumns = new Command(v =>
-                {
-                    removedColumns.AddRange(actualColumns);
-                    actualColumns.Clear();
-                    vm.SetupVisibleForAll(false);
-                });
 
-                vm.ShowAllColumns = new Command(v =>
-                {
-                    foreach (var col in removedColumns)
-                    {
-                        actualColumns.Add(col);
-                    }
+            //    vm.ChangeVisible = new Command(v =>
+            //    {
+            //        if (v is ColumnComponent comp)
+            //        {
+            //            if (comp.IsVisible)
+            //            {
+            //                actualColumns.Add(comp.Column);
+            //                removedColumns.Remove(comp.Column);
+            //            }
+            //            else
+            //            {
+            //                actualColumns.Remove(comp.Column);
+            //                removedColumns.Add(comp.Column);
+            //            }
+            //        }
+            //    });
 
-                    removedColumns.Clear();
-                    vm.SetupVisibleForAll(true);
-                });
+            //    vm.HideAllColumns = new Command(v =>
+            //    {
+            //        removedColumns.AddRange(actualColumns);
+            //        actualColumns.Clear();
+            //        vm.SetupVisibleForAll(false);
+            //    });
 
-                var window = GetNewWindow<ColumnsWindow>(vm);
-                window.Show();
-            }
-            else
-            {
-                Focus<ColumnsWindow>();
-            }
+            //    vm.ShowAllColumns = new Command(v =>
+            //    {
+            //        foreach (var col in removedColumns)
+            //        {
+            //            actualColumns.Add(col);
+            //        }
+
+            //        removedColumns.Clear();
+            //        vm.SetupVisibleForAll(true);
+            //    });
+
+            //    var window = GetNewWindow<ColumnsWindow>(vm);
+            //    window.Show();
+            //}
+            //else
+            //{
+            //    Focus<ColumnsWindow>();
+            //}
         });
 
-        protected virtual ViewBase OnSetupView()
-        {
-            if (Columns == null)
-            {
-                throw new ArgumentException("Either override this method either override filed colums");
-            }
-
-            var gridView = new GridView();
-
-
-            foreach (var col in Columns)
-            {
-                var column = new GridViewColumn() { Header = col.Key, DisplayMemberBinding = new Binding(col.Value) };
-                gridView.Columns.Add(column);
-            }
-
-            return gridView;
-        }
+        protected abstract void OnSetupView(ColumnsBuilder<T> builder);
 
         #endregion
 
@@ -353,28 +358,13 @@ namespace ArchiveApp.Abstract
         private void SetupFilters(ColumnComponent[] allColumns)
         {
             var existFilters = new List<FilterOption>();
-            SetupFilterFields(existFilters);
-
-            filters = allColumns.Select(y =>
-            {
-                var filter = existFilters.FirstOrDefault(x => x.Header == y.Header?.ToString());
-
-                if (filter == null)
-                {
-                    filter = FilerOptionSource.GetFilter<T>(y.BindingProperty, y.Header?.ToString());
-                }
-                else
-                {
-                    existFilters.Remove(filter);
-                }
-
-                filter.FilterValueChanged += Filter_FilterValueChanged;
-                return filter;
-            }).
-            ToArray();
+            filters = allColumns.Select(y => 
+            { 
+                y.FilterOption.FilterValueChanged += Filter_FilterValueChanged;
+                return y.FilterOption;
+            }).ToArray();
         }
         public int FiltersCount { get; private set; }
-        protected virtual void SetupFilterFields(List<FilterOption> list) { }
 
         List<IFilterOption> actualFilters = new List<IFilterOption>();
 
@@ -388,8 +378,12 @@ namespace ArchiveApp.Abstract
             {
                 actualFilters.Add(obj);
             }
-            ItemsView.Filter = item => actualFilters.All(f => f.Filter(item));
-            RefreshCollectionView();
+            ItemsView.Filter = item =>
+            {
+                return actualFilters.All(f => f.Filter(item));
+            };
+
+            //RefreshCollectionView();
         }
 
         private void Vm_FilterCountChanged(int obj)

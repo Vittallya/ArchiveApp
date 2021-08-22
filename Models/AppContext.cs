@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Models;
 using System;
+using System.Collections.Generic;
 
 namespace Models
 {
@@ -10,15 +11,16 @@ namespace Models
         {
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             //ChangeTracker.LazyLoadingEnabled = true;
+            //Database.EnsureDeleted();
             //Database.EnsureCreated();
-            
+
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.EnableSensitiveDataLogging();
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {            
         }
 
         public DbSet<Protocol> Protocols => Set<Protocol>();
         public DbSet<People> Peoples => Set<People>();
+
     }
 }

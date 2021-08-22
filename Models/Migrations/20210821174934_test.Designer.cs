@@ -3,51 +3,23 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models;
 
 namespace Models.Migrations
 {
     [DbContext(typeof(AppContext))]
-    partial class AppContextModelSnapshot : ModelSnapshot
+    [Migration("20210821174934_test")]
+    partial class test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.8")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("Models.Education", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Education");
-                });
-
-            modelBuilder.Entity("Models.FamilyType", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FamilyType");
-                });
 
             modelBuilder.Entity("Models.Natio", b =>
                 {
@@ -64,36 +36,6 @@ namespace Models.Migrations
                     b.ToTable("Natio");
                 });
 
-            modelBuilder.Entity("Models.Organ", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Organ");
-                });
-
-            modelBuilder.Entity("Models.Party", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Party");
-                });
-
             modelBuilder.Entity("Models.People", b =>
                 {
                     b.Property<int>("Id")
@@ -108,11 +50,11 @@ namespace Models.Migrations
                     b.Property<short>("BirthYear")
                         .HasColumnType("smallint");
 
-                    b.Property<short?>("EducationId")
-                        .HasColumnType("smallint");
+                    b.Property<string>("Education")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<short?>("FamilyTypeId")
-                        .HasColumnType("smallint");
+                    b.Property<string>("Family")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Gender")
                         .HasColumnType("bit");
@@ -128,8 +70,8 @@ namespace Models.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<short?>("PartyId")
-                        .HasColumnType("smallint");
+                    b.Property<string>("Party")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Surname")
                         .HasMaxLength(50)
@@ -137,13 +79,7 @@ namespace Models.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EducationId");
-
-                    b.HasIndex("FamilyTypeId");
-
                     b.HasIndex("NatioId");
-
-                    b.HasIndex("PartyId");
 
                     b.ToTable("Peoples");
                 });
@@ -155,8 +91,9 @@ namespace Models.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<short?>("OrganId")
-                        .HasColumnType("smallint");
+                    b.Property<string>("Organ")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("PeopleId")
                         .HasColumnType("int");
@@ -178,86 +115,38 @@ namespace Models.Migrations
                     b.Property<string>("Resolution")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<short?>("SocialId")
-                        .HasColumnType("smallint");
+                    b.Property<string>("Social")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Source")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganId");
-
                     b.HasIndex("PeopleId");
-
-                    b.HasIndex("SocialId");
 
                     b.ToTable("Protocols");
                 });
 
-            modelBuilder.Entity("Models.Social", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Social");
-                });
-
             modelBuilder.Entity("Models.People", b =>
                 {
-                    b.HasOne("Models.Education", "Education")
-                        .WithMany()
-                        .HasForeignKey("EducationId");
-
-                    b.HasOne("Models.FamilyType", "FamilyType")
-                        .WithMany()
-                        .HasForeignKey("FamilyTypeId");
-
                     b.HasOne("Models.Natio", "Natio")
                         .WithMany()
                         .HasForeignKey("NatioId");
 
-                    b.HasOne("Models.Party", "Party")
-                        .WithMany()
-                        .HasForeignKey("PartyId");
-
-                    b.Navigation("Education");
-
-                    b.Navigation("FamilyType");
-
                     b.Navigation("Natio");
-
-                    b.Navigation("Party");
                 });
 
             modelBuilder.Entity("Models.Protocol", b =>
                 {
-                    b.HasOne("Models.Organ", "Organ")
-                        .WithMany()
-                        .HasForeignKey("OrganId");
-
                     b.HasOne("Models.People", "People")
                         .WithMany()
                         .HasForeignKey("PeopleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Models.Social", "Social")
-                        .WithMany()
-                        .HasForeignKey("SocialId");
-
-                    b.Navigation("Organ");
-
                     b.Navigation("People");
-
-                    b.Navigation("Social");
                 });
 #pragma warning restore 612, 618
         }

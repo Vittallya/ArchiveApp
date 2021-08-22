@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace ArchiveApp.Resources.Components
 {
-    public class FilterControl
+    public abstract class FilterControl
     {
-        private object filterValue;
-        private int selectedHelperIndex;
+        protected object filterValue;
 
         public FrameworkElement Control { get; set; }
 
@@ -27,18 +29,7 @@ namespace ArchiveApp.Resources.Components
         }
 
         public FilterOption FilterOption { get; }
-
         public bool IsHelpingOptions { get; set; }
-        public string[] HelpingOptions { get; set; } = new string[]
-            {"Меньше", "Равно", "Больше", "Меньше или равно", "Больше или равно"};
-
-        public IComparable SelectedItem { get; set; }
-
-        public int SelectedHelperIndex 
-        { 
-            get => selectedHelperIndex;
-            set { selectedHelperIndex = value; FilterOption.OnFilterChanged(); }       
-        }
 
         public object FilterValue
         {
@@ -46,10 +37,21 @@ namespace ArchiveApp.Resources.Components
             set
             {
                 filterValue = value;
-                FilterOption.OnFilterChanged();
+                OnFilterValueChanged();
             }
         }
+
+        protected void OnFilterValueChanged()
+        {
+            OnPrepare();
+            FilterOption.OnFilterChanged();
+        }
+
+        protected virtual void OnPrepare() { }
+
+        public abstract bool OnFilter(object itemValue);
     }
+
 
 
 

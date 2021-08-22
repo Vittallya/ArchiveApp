@@ -7,6 +7,7 @@ using BL;
 using ArchiveApp.Services;
 using BL.DbHandling;
 using System.Threading.Tasks;
+using ArchiveApp.Resources.Components;
 
 namespace ArchiveApp.ViewModels
 {
@@ -35,6 +36,11 @@ namespace ArchiveApp.ViewModels
         }
 
         protected override void OnRemove(People[] items)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void OnSetupView(ColumnsBuilder<People> builder)
         {
             throw new NotImplementedException();
         }

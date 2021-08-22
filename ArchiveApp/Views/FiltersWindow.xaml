@@ -85,7 +85,7 @@
 
                                                         <ComboBox 
                                                 HorizontalAlignment="Left"
-                                                Width="150"
+                                                Width="180"
                                                 DockPanel.Dock="Bottom"
                                                 Margin="0 5 0 0"
                                                 SelectedIndex="{Binding SelectedHelperIndex, UpdateSourceTrigger=PropertyChanged}"

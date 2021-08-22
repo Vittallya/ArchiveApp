@@ -21,10 +21,6 @@ namespace Models
         public string ResidentPlace { get; set; }
 
         public People People { get; set; }
-        [MaxLength(100)]
-        public string Social { get; set; }
-        [MaxLength(50)]
-        public string Organ { get; set; }
 
         public object Clone()
         {
@@ -38,12 +34,18 @@ namespace Models
         {
             return Id.CompareTo(obj);
         }
+
+        public Organ Organ { get; set; }
+        public Social Social { get; set; }
+
+        public short? SocialId { get; set; }
+        public short? OrganId { get; set; }
     }
 
     public class Social
     {
         public short Id { get; set; }
-        public string Kind { get; set; }
+        public string Name { get; set; }
     }
     public class Organ
     {

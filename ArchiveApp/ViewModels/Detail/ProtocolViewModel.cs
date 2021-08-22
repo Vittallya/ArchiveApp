@@ -14,12 +14,13 @@ using System.Text.RegularExpressions;
 using ArchiveApp.Services;
 using ArchiveApp.Resources.Components;
 using System.Threading.Tasks;
+using BL.DbHandling;
 
 namespace ArchiveApp.ViewModels
 {
     public class ProtocolViewModel : BaseViewModel
     {
-        
+
 
         public bool IsStayActive { get; set; }
 
@@ -47,13 +48,13 @@ namespace ArchiveApp.ViewModels
 
 
         public void OnAdd()
-        {            
-            Protocol = new Protocol() { ProtocolYear = Years[86], Punishment = Punishments[2]};
+        {
+            Protocol = new Protocol() { ProtocolYear = Years[87], Punishment = Punishments[2] };
             IsNewPeopleRecord = true;
 
             if (People == null)
             {
-                People = new People { Gender = true, BirthYear = Years[46] };
+                People = new People { Gender = true, BirthYear = Years[40] };
             }
             else
             {
@@ -63,6 +64,8 @@ namespace ArchiveApp.ViewModels
 
             IsEdit = false;
         }
+
+
 
 
         public void OnEdit(Protocol item)
@@ -75,6 +78,35 @@ namespace ArchiveApp.ViewModels
             IsNewPeopleRecord = false;
             IsEdit = true;
         }
+        
+        private void CheckOuter()
+        {
+            if (!People.NatioId.HasValue)
+            {
+                People.Natio = NatioNew;
+            }
+            if (!People.EducationId.HasValue)
+            {
+                People.Education = EducationNew;
+            }
+            if (!People.PartyId.HasValue)
+            {
+                People.Party = PartyNew;
+            }
+            if (!People.FamilyTypeId.HasValue)
+            {
+                People.FamilyType = FamilyNew;
+            }
+            if (!Protocol.OrganId.HasValue)
+            {
+                Protocol.Organ = OrganNew;
+            }
+            if (!Protocol.SocialId.HasValue)
+            {
+                Protocol.Social = SocialNew;
+            }
+        }
+        
         private async void OnAccept()
         {
             ErrorMessage = null;
@@ -83,71 +115,53 @@ namespace ArchiveApp.ViewModels
                 OnErrorValid(validator.ErrorMessage);
                 return;
             }
+            CheckOuter();
 
             Protocol.People = People;
-
             await Accepted?.Invoke(this);
 
+            if (IsStayActive)
+            {
+                if (!People.NatioId.HasValue)
+                {
+                    AllNatio = UpdateDataSource(AllNatio, NatioNew);
+                }
+                if (IsNewPeopleRecord)
+                {
+                    AllPeoples = UpdateDataSource(AllPeoples, People);
+                    People = null;
+                }
 
-            if (People.Nationality == null)
-            {
-                People.Nationality = NationalityText;
-                dropDownDataService.AddItem("natio", NationalityText);
+                if (IsEdit)
+                {
+                    NatioNew = new Natio { Name = NatioNew.Name };
+                    EducationNew = new Education { Name = EducationNew.Name };
+                    PartyNew = new Party { Name = PartyNew.Name };
+                    FamilyNew = new FamilyType { Name = FamilyNew.Name };
+                    OrganNew = new Organ { Name = OrganNew.Name };
+                    SocialNew = new Social { Name = SocialNew.Name };
+                    OnEdit(Protocol);
+                }
+                else
+                {
+                    NatioNew = new Natio();
+                    EducationNew = new Education();
+                    PartyNew = new Party();
+                    FamilyNew = new FamilyType();
+                    OrganNew = new Organ();
+                    SocialNew = new Social();
+                    OnAdd();
+                }
             }
+            
+        }
 
-            if (People.Party == null)
-            {
-                People.Party = PartyText;
-                dropDownDataService.AddItem("party", PartyText);
-            }
-
-            if (People.Education == null)
-            {
-                People.Education = EducationText;
-                dropDownDataService.AddItem("education", EducationText);
-            }
-
-            if (People.Family == null)
-            {
-                People.Family = FamilyText;
-                dropDownDataService.AddItem("family", FamilyText);
-            }
-
-            if (Protocol.Social == null)
-            {
-                Protocol.Social = SocialText;
-                dropDownDataService.AddItem("social", SocialText);
-            }
-
-            if (Protocol.Organ == null)
-            {
-                Protocol.Organ = OrganText;
-                dropDownDataService.AddItem("organ", OrganText);
-            }
-
-            if (dropDownDataService.HasChanges)
-            {
-                dropDownDataService.SaveChanges();
-                ReloadDropDownData();
-            }
-
-            if (IsNewPeopleRecord)
-            {
-                var list = AllPeoples.ToList();
-                list.Add(People);
-                AllPeoples = list.ToArray();                
-                People = null;
-                //todo непонятная строка
-            }
-
-            if (IsEdit)
-            {
-                OnEdit(Protocol);
-            }
-            else
-            {
-                OnAdd();
-            }
+        private T[] UpdateDataSource<T>(T[] items, T newItem)
+        {
+            var newArr = new T[items.Length + 1];
+            items.CopyTo(newArr, 0);
+            newArr[items.Length] = newItem;
+            return newArr;
         }
 
         private void OnCancel()
@@ -202,13 +216,14 @@ namespace ArchiveApp.ViewModels
         public void PeopleUpdate(People people)
         {
             if (people != null)
-            {                              
+            {
                 People = people.Clone() as People;
                 IsFiledVisible = true;
             }
             else
             {
                 IsFiledVisible = false;
+                Fio = null;
             }
         }
 
@@ -222,49 +237,52 @@ namespace ArchiveApp.ViewModels
         {
             get => peopleSearched;
             set
-            {                
+            {
                 peopleSearched = value?.Clone() as People;
                 OnPropertyChanged();
-                PeopleUpdate(peopleSearched);                
+                PeopleUpdate(peopleSearched);
             }
         }
 
-        public string NationalityText { get; set; }
-        public string OrganText { get; set; }
-        public string FamilyText { get; set; }
-        public string PartyText { get; set; }
-        public string EducationText { get; set; }
-        public string SocialText { get; set; }
+        public Natio NatioNew { get; set; } = new Natio();
+        public Party PartyNew { get; set; } = new Party();
+        public Education EducationNew { get; set; } = new Education();
+        public FamilyType FamilyNew { get; set; } = new FamilyType();
+        public Social SocialNew { get; set; } = new Social();
+        public Organ OrganNew { get; set; } = new Organ();
+
+        
+
+        //public short? EducationId { get; set; }
+        //public short? PartyId { get; set; }
+        //public short? PartyId { get; set; }
 
         #endregion
 
         #region Источники данных
 
-        public void LoadItemsScources(People[] peoples)
+        public void LoadItemsScources(UnitOfWork unitOfWork)
         {
-            AllPeoples = peoples;
-            ReloadDropDownData();
-        }
-
-        private void ReloadDropDownData()
-        {
-            AllNationalities = dropDownDataService.GetUnits("natio");
-            AllFamily = dropDownDataService.GetUnits("family");
-            AllParty = dropDownDataService.GetUnits("party");
-            AllEducation = dropDownDataService.GetUnits("education");
+            var uw = unitOfWork;
+            AllPeoples = uw.Peoples.LoadItems().ToArray();
+            AllNatio = uw.Natios.ToArray();
+            AllFamily = uw.FamilyTypes.ToArray();
+            AllParty = uw.Parties.ToArray();
+            AllEducation = uw.Educations.ToArray();
 
 
-            AllOrgans = dropDownDataService.GetUnits("organs");
-            AllSocial = dropDownDataService.GetUnits("social");
+            AllOrgans = uw.Organs.ToArray();
+            AllSocial = uw.Socials.ToArray();
         }
 
         public People[] AllPeoples { get; private set; }
-        public RootUnitsItem[] AllNationalities { get; set; }
-        public RootUnitsItem[] AllFamily { get; set; }
-        public RootUnitsItem[] AllSocial { get; set; }
-        public RootUnitsItem[] AllEducation { get; set; }
-        public RootUnitsItem[] AllParty { get; set; }
-        public RootUnitsItem[] AllOrgans { get; set; }
+        public Models.Natio[] AllNatio { get; set; }
+        public FamilyType[] AllFamily { get; set; }
+        public Social[] AllSocial { get; set; }
+        public Education[] AllEducation { get; set; }
+        public Party[] AllParty { get; set; }
+        public Organ[] AllOrgans { get; set; }
+
 
 
         public short[] Years { get; } = Enumerable.Range(1850, 141).Select(x => (short)x).ToArray();
@@ -306,36 +324,36 @@ namespace ArchiveApp.ViewModels
             validator = new Validator();
 
 
-            validator.ForProperty(() => Fio, "").Predicate(y => IsNewPeopleRecord || peopleSearched != null, 
+            validator.ForProperty(() => Fio, "").Predicate(y => IsNewPeopleRecord || peopleSearched != null,
                 "Находясь в режиме существующей записи о человеке необходимо выбрать запись о человеке");
 
             validator.ForProperty(() => People.Surname, "Фамилия").NotEmpty().LengthLessThan(150);
             validator.ForProperty(() => People.BirthPlace, "Место рождения").NotEmpty().LengthLessThan(150);
             validator.ForProperty(() => PeopleSearched?.ToString(), "ФИО").Predicate(x => !string.IsNullOrEmpty(x) || IsNewPeopleRecord,
                 "Необходимо выбрать существующую запись о человеке в поле \"ФИО\" либо перейти в режим добавления записи");
-            validator.ForProperty(() => EducationText, "").
-                Predicate(x => !string.IsNullOrEmpty(x) || People.Education != null,
-                "Для поля \"Образование\" необходимо выбрать значение из существующих или написать новое");
+            //validator.ForProperty(() => EducationText, "").
+            //    Predicate(x => !string.IsNullOrEmpty(x) || People.Education != null,
+            //    "Для поля \"Образование\" необходимо выбрать значение из существующих или написать новое");
 
-            validator.ForProperty(() => PartyText, "").
-                Predicate(x => !string.IsNullOrEmpty(x) || People.Party != null,
-                "Для поля \"Партийность\" необходимо выбрать значение из существующих или написать новое");
+            //validator.ForProperty(() => PartyText, "").
+            //    Predicate(x => !string.IsNullOrEmpty(x) || People.Party != null,
+            //    "Для поля \"Партийность\" необходимо выбрать значение из существующих или написать новое");
 
-            validator.ForProperty(() => FamilyText, "").
-                Predicate(x => !string.IsNullOrEmpty(x) || People.Family != null,
-                "Для поля \"Семейное положение\" необходимо выбрать значение из существующих или написать новое");
+            //validator.ForProperty(() => FamilyText, "").
+            //    Predicate(x => !string.IsNullOrEmpty(x) || People.Family != null,
+            //    "Для поля \"Семейное положение\" необходимо выбрать значение из существующих или написать новое");
 
-            validator.ForProperty(() => NationalityText, "").
-                Predicate(x => !string.IsNullOrEmpty(x) || People.Nationality != null,
-                "Для поля \"Национальность\" необходимо выбрать значение из существующих или написать новое");
+            //validator.ForProperty(() => NationalityText, "").
+            //    Predicate(x => !string.IsNullOrEmpty(x) || People.Nationality != null,
+            //    "Для поля \"Национальность\" необходимо выбрать значение из существующих или написать новое");
 
-            validator.ForProperty(() => SocialText, "").
-                Predicate(x => !string.IsNullOrEmpty(x) || Protocol.Social != null,
-                "Для поля \"Кем работал(-а) на момент ареста\" необходимо выбрать значение из существующих или написать новое");
+            //validator.ForProperty(() => SocialText, "").
+            //    Predicate(x => !string.IsNullOrEmpty(x) || Protocol.Social != null,
+            //    "Для поля \"Кем работал(-а) на момент ареста\" необходимо выбрать значение из существующих или написать новое");
 
-            validator.ForProperty(() => OrganText, "").
-                Predicate(x => !string.IsNullOrEmpty(x) || Protocol.Organ != null,
-                "Для поля \"Судебный орган\" необходимо выбрать значение из существующих или написать новое");
+            //validator.ForProperty(() => OrganText, "").
+            //    Predicate(x => !string.IsNullOrEmpty(x) || Protocol.Organ != null,
+            //    "Для поля \"Судебный орган\" необходимо выбрать значение из существующих или написать новое");
 
             validator.ForProperty(() => Protocol.ProtocolNumber, "По каким статьям УК РСФСР осужден").NotEmpty();
             validator.ForProperty(() => Protocol.ResidentPlace, "Место проживания на момент ареста").NotEmpty();
@@ -345,5 +363,12 @@ namespace ArchiveApp.ViewModels
         }
 
         #endregion
+        public byte? Test { get; set; }
+
+        public ICommand TestCommand => new Command(x =>
+        {
+            byte? test = Test;
+        });
     }
+
 }

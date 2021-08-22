@@ -41,14 +41,13 @@
                     Focusable="True"        
                     x:Name="tb"/>
         </DockPanel>
-            <Canvas Background="White"  Panel.ZIndex="1000">
 
-                <ListView
+        <ListView
                     Visibility="Collapsed"
                     Width="{Binding ElementName=dock, Path=ActualWidth}"
                     IsTabStop="False"
                     Focusable="False"  
-                    Panel.ZIndex="15"
+                    Panel.ZIndex="1050"
                      MaxHeight="180"
                     VirtualizingPanel.CacheLength="5"
                     VirtualizingPanel.IsVirtualizing="True"
@@ -59,55 +58,54 @@
                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                     x:Name="listView">
 
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate  TargetType="ListViewItem">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate  TargetType="ListViewItem">
 
 
-                                        <Border 
+                                <Border 
                                             Background="{TemplateBinding Background}"
                                         BorderBrush="{TemplateBinding BorderBrush}"
                                         MouseDown="StackPanel_MouseDown"
                                         BorderThickness="{TemplateBinding BorderThickness}"
                                         Padding="{TemplateBinding Padding}">
-                                            <StackPanel                                                 
+                                    <StackPanel                                                 
                                         Orientation="Horizontal">
-                                                <TextBlock Text="{Binding NotBoldPart1}"/>
-                                                <TextBlock FontWeight="Bold" Text="{Binding BoldPart}"/>
-                                                <TextBlock Text="{Binding NotBoldPart2}"/>
-                                            </StackPanel>
-                                        </Border>
+                                        <TextBlock Text="{Binding NotBoldPart1}"/>
+                                        <TextBlock FontWeight="Bold" Text="{Binding BoldPart}"/>
+                                        <TextBlock Text="{Binding NotBoldPart2}"/>
+                                    </StackPanel>
+                                </Border>
 
 
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter Property="Background" Value="LightGray"/>
-                                            </Trigger>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="LightGray"/>
+                                    </Trigger>
 
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#FFC2C2C2"/>
-                                            </Trigger>
-                                            <EventTrigger RoutedEvent="MouseDown" >
-                                                <BeginStoryboard>
-                                                    <Storyboard>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#FFC2C2C2"/>
+                                    </Trigger>
+                                    <EventTrigger RoutedEvent="MouseDown" >
+                                        <BeginStoryboard>
+                                            <Storyboard>
 
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </EventTrigger>
-                                        </ControlTemplate.Triggers>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </ControlTemplate.Triggers>
 
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListView.ItemContainerStyle>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
 
-                </ListView>
-            </Canvas>
+        </ListView>
 
-        </StackPanel>
+    </StackPanel>
 </UserControl>
 <!--ItemsSource="{TemplateBinding ItemsSource}"
                                 SelectedItem="{TemplateBinding SelectedItem}"

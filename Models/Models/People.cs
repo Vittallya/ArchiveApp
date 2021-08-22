@@ -8,8 +8,6 @@ namespace Models
 {
     public class People: ICloneable, IComparable
     {
-
-
         public int Id { get; set; }
 
         [MaxLength(50)]
@@ -25,10 +23,6 @@ namespace Models
         [MaxLength(150)]
         public string BirthPlace { get; set; }
         public short BirthYear { get; set; }
-        public string Nationality { get; set; }
-        public string Education { get; set; }
-        public string Party { get; set; }
-        public string Family { get; set; }
 
         [NotMapped]
         public string Fio => Surname + " " + Name + " " + Otchestvo;
@@ -42,8 +36,19 @@ namespace Models
         {
             return Id.CompareTo(obj);
         }
+
+
+        public short? NatioId { get; set; }
+        public short? EducationId { get; set; }
+        public short? PartyId { get; set; }
+        public short? FamilyTypeId { get; set; }
+
+        public Natio Natio { get; set; }
+        public Party Party { get; set; }
+        public Education Education { get; set; }
+        public FamilyType FamilyType { get; set; }
     }
-    public class Nationality
+    public class Natio
     {
         public short Id { get; set; }
         public string Name { get; set; }
@@ -52,18 +57,18 @@ namespace Models
     public class Education
     {
         public short Id { get; set; }
-        public string Kind { get; set; }
+        public string Name { get; set; }
     }
 
     public class Party
     {
         public short Id { get; set; }
-        public string Type { get; set; }
+        public string Name { get; set; }
     }
 
     public class FamilyType
     {
         public short Id { get; set; }
-        public string Type { get; set; }
+        public string Name { get; set; }
     }
 }

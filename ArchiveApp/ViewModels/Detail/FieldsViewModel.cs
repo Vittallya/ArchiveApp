@@ -21,7 +21,7 @@ namespace ArchiveApp.ViewModels
             for (int i = 0; i < Columns.Count; i++)
             {
                 var col = Columns[i];
-                Columns[i] = new ColumnComponent { Column = col.Column, Header = col.Header, IsVisible = vis };
+                Columns[i].IsVisible = vis;
             }
         }
 

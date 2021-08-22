@@ -53,6 +53,12 @@
                                     Visibility="{Binding IsClearBtnVis, Converter={StaticResource BoolToVis}}"
                                     Command="{Binding ClearSearchCommand}"
                                     HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            
+                            <Button Content="Тест" 
+                                    Style="{DynamicResource LinkButton}"
+                                    FontSize="14"
+                                    Command="{Binding TestCommand}"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
                             <StackPanel Margin="5 19 0 0">
                                 <DockPanel
@@ -165,24 +171,17 @@
 
                                     <DockPanel Margin="0 7 0 0"
                                Panel.ZIndex="15">
-                                        <!--<c:TextBoxList ItemsSource="{Binding AllNationalities, Mode=OneWay}" 
+                                        <c:TextBoxList ItemsSource="{Binding AllNatio, Mode=OneWay}" 
                                                Panel.ZIndex="25"
-                                                   DisplayMemberPath="Value"
-                                                   SelectedValuePath="Value"
-                                               Text="{Binding NationalityText, UpdateSourceTrigger=PropertyChanged}"
+                                                   DisplayMemberPath="Name"
+                                                   SelectedValuePath="Id"
+                                               Text="{Binding NatioNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                DockPanel.Dock="Bottom"
-                                                SelectedItem="{Binding Natio, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                SelectedValue="{Binding People.Nationality,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />-->
-                                        <c:TextBoxList ItemsSource="{Binding AllNationalities, Mode=OneWay}" 
-                                               Panel.ZIndex="25"
-                                                   DisplayMemberPath="Value"
-                                                   SelectedValuePath="Value"
-                                               Text="{Binding NationalityText, UpdateSourceTrigger=PropertyChanged}"
-                                               DockPanel.Dock="Bottom"
-                                                SelectedValue="{Binding People.Nationality, UpdateSourceTrigger=PropertyChanged}" />
+                                                       SelectedItem="{Binding People.Natio, UpdateSourceTrigger=PropertyChanged}"
+                                                SelectedValue="{Binding People.NatioId, UpdateSourceTrigger=PropertyChanged}" />
 
                                         <TextBlock 
-                                        Visibility="{Binding People.Nationality, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding People.NatioId, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -198,14 +197,15 @@
                                Panel.ZIndex="14">
                                         <c:TextBoxList ItemsSource="{Binding AllEducation}" 
                                                Panel.ZIndex="25"
-                                                   DisplayMemberPath="Value"
-                                                   SelectedValuePath="Value"
-                                               Text="{Binding EducationText, UpdateSourceTrigger=PropertyChanged}"
+                                                   DisplayMemberPath="Name"
+                                                   SelectedValuePath="Id"
+                                               Text="{Binding EducationNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                DockPanel.Dock="Bottom"                                                   
-                                               SelectedValue="{Binding People.Education,UpdateSourceTrigger=PropertyChanged}" />
+                                               SelectedValue="{Binding People.EducationId,UpdateSourceTrigger=PropertyChanged}"
+                                               SelectedItem="{Binding People.Education,UpdateSourceTrigger=PropertyChanged}" />
 
                                         <TextBlock 
-                                        Visibility="{Binding People.Education, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding People.EducationId, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -219,14 +219,15 @@
                                Panel.ZIndex="13">
                                         <c:TextBoxList ItemsSource="{Binding AllParty, Mode=OneWay}" 
                                                    Panel.ZIndex="25"
-                                                   Text="{Binding PartyText, UpdateSourceTrigger=PropertyChanged}"
+                                                   Text="{Binding PartyNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                    DockPanel.Dock="Bottom"
-                                                    DisplayMemberPath="Value"
-                                                    SelectedValuePath="Value"
-                                                   SelectedValue="{Binding People.Party,UpdateSourceTrigger=PropertyChanged}" />
+                                                    DisplayMemberPath="Name"
+                                                    SelectedValuePath="Id"
+                                                   SelectedItem="{Binding People.Party,UpdateSourceTrigger=PropertyChanged}" 
+                                                   SelectedValue="{Binding People.PartyId,UpdateSourceTrigger=PropertyChanged}" />
 
                                         <TextBlock 
-                                        Visibility="{Binding People.Party, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding People.PartyId, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -240,15 +241,16 @@
                                Panel.ZIndex="12">
                                         <c:TextBoxList ItemsSource="{Binding AllFamily, Mode=OneWay}" 
                                                Panel.ZIndex="25"
-                                               Text="{Binding FamilyText, UpdateSourceTrigger=PropertyChanged}"
+                                               Text="{Binding FamilyNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                DockPanel.Dock="Bottom"
                                                    
-                                                   DisplayMemberPath="Value"
-                                                   SelectedValuePath="Value"
-                                               SelectedValue="{Binding People.Family,UpdateSourceTrigger=PropertyChanged}" />
+                                                   DisplayMemberPath="Name"
+                                                   SelectedValuePath="Id"
+                                                       SelectedItem="{Binding People.FamilyType, UpdateSourceTrigger=PropertyChanged}"
+                                               SelectedValue="{Binding People.FamilyTypeId,UpdateSourceTrigger=PropertyChanged}" />
 
                                         <TextBlock 
-                                        Visibility="{Binding People.Family, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding People.FamilyTypeId, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -285,15 +287,16 @@
                 <DockPanel TextBlock.FontSize="15" Margin="0 7 0 0"
                                Panel.ZIndex="9">
                     <c:TextBoxList ItemsSource="{Binding AllSocial, Mode=OneWay}" 
-                                               Text="{Binding SocialText, UpdateSourceTrigger=PropertyChanged}"
+                                               Text="{Binding SocialNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                DockPanel.Dock="Bottom"
                                    
-                                                   DisplayMemberPath="Value"
-                                                   SelectedValuePath="Value"
-                                               SelectedValue="{Binding Protocol.Social}" />
+                                                   DisplayMemberPath="Name"
+                                                   SelectedValuePath="Id"
+                                        SelectedItem="{Binding Protocol.Social, UpdateSourceTrigger=PropertyChanged}"
+                                               SelectedValue="{Binding Protocol.SocialId, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock 
-                                        Visibility="{Binding Protocol.Social, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding Protocol.SocialId, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -323,14 +326,15 @@
                                    DockPanel.Dock="Bottom"
                                 Panel.ZIndex="5"
                                 Background="White"                                   
-                                DisplayMemberPath="Value"
-                                SelectedValuePath="Value"
-                                Text="{Binding OrganText, UpdateSourceTrigger=PropertyChanged}"
-                                SelectedValue="{Binding Protocol.Organ}"
+                                DisplayMemberPath="Name"
+                                SelectedValuePath="Id"
+                                Text="{Binding OrganNew.Name, UpdateSourceTrigger=PropertyChanged}"
+                                   SelectedItem="{Binding Protocol.Organ, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedValue="{Binding Protocol.OrganId, UpdateSourceTrigger=PropertyChanged}"
                                 FontSize="14"/>
 
                     <TextBlock 
-                                Visibility="{Binding Protocol.Organ, Converter={StaticResource NullToVisInv}}"
+                                Visibility="{Binding Protocol.OrganId, Converter={StaticResource NullToVisInv}}"
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 DockPanel.Dock="Right" Text="*"/>

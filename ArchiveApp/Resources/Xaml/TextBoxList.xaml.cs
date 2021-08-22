@@ -106,16 +106,21 @@ namespace ArchiveApp.Resources
 
         #region OnChanged
 
-        bool first = true;
+        private List<string> notNotify = new List<string>() { nameof(Text)};
+
+        private bool CheckNotNotify(string pName)
+        {
+            return notNotify.Remove(pName);
+        }
+
 
         private void OnTextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            if (first)
+            if (!CheckNotNotify(e.Property.Name))
             {
-                first = false;
-                return;
+                OnFocused();
             }
-            OnFocused();
+
         }
 
         private void OnItemsSourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
@@ -189,6 +194,7 @@ namespace ArchiveApp.Resources
         private void OnSelectedItemChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
 
+            notNotify.Add(nameof(SelectedValue));
             if (e.NewValue == null)
             {
                 SelectedValue = null;
@@ -196,11 +202,11 @@ namespace ArchiveApp.Resources
             }
             else
             {
-                isPaste = true;
+                notNotify.Add(nameof(Text));
 
-                Text = displayProperty != null ? 
+                Text = displayProperty != null ?
                     displayProperty.GetValue(e.NewValue)?.ToString() : e.NewValue?.ToString();
-                
+
                 SelectedValue = valueProperty != null ?
                     valueProperty.GetValue(e.NewValue) : e.NewValue;
             }
@@ -208,31 +214,22 @@ namespace ArchiveApp.Resources
         }
         private void OnSelectedValueChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
+            if (CheckNotNotify(e.Property.Name))
+                return;
+
             if (valueProperty != null)
             {
-                isPaste = true;
-
-                if(e.NewValue != null)
+                if(SelectedItem == null && e.NewValue != null || SelectedItem != null && e.NewValue != valueProperty.GetValue(SelectedItem))
                 {
-                    if (SelectedItem != null)
+                    var obj = displaySource.FirstOrDefault(x => valueProperty.GetValue(x.Item)?.Equals(e.NewValue) ?? false).Item;
+                    if (obj != null)
                     {
-                        Text = displayProperty != null ?
-                            displayProperty.GetValue(SelectedItem)?.ToString() : SelectedItem?.ToString();
-                    }
-                    else
-                    {
-
-                        var obj = displaySource.FirstOrDefault(x => valueProperty.GetValue(x.Item)?.Equals(e.NewValue) ?? false).Item;
-                        if (obj != null)
-                        {
-                            Text = displayProperty != null ?
-                                displayProperty.GetValue(obj)?.ToString() : obj?.ToString();
-                        }
-                    }
-
+                        SelectedItem = obj;
+                    }                  
                 }
-                else if (DisplayMemberPath == SelectedValuePath)
+                else if (DisplayMemberPath == SelectedValuePath && SelectedItem == null)
                 {
+                    notNotify.Add(nameof(Text));
                     Text = null;
                 }
 
@@ -269,8 +266,6 @@ namespace ArchiveApp.Resources
             InitializeComponent();
         }
 
-        bool isPaste;
-
         private void tb_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Down)
@@ -288,6 +283,10 @@ namespace ArchiveApp.Resources
                 else
                     listView.SelectedIndex = listView.Items.Count - 1;
             }
+            else if(e.Key == Key.Escape)
+            {
+                toggle.IsChecked = false;
+            }
             else if ((e.Key == Key.Enter || e.Key == Key.Tab) && listView.Visibility == Visibility.Visible)
             {
                 if(listView.SelectedItem is SearchItem item)
@@ -296,18 +295,10 @@ namespace ArchiveApp.Resources
                 }
             }
         }
-        DisplayItem[] search;
         void OnFocused()
         {
-
             if (displaySource == null || !IsSearchEnabled)
                 return;
-
-            if (isPaste)
-            {
-                isPaste = false;
-                return;
-            }
 
             listView.Visibility = Visibility.Collapsed;
             IEnumerable<SearchItem> res = UpdateSearch();
@@ -331,29 +322,38 @@ namespace ArchiveApp.Resources
             if (!string.IsNullOrEmpty(text))
             {
                 toggle.IsChecked = false;
-                search = displaySource.Where(x => x.DisplayLower?.Contains(text) ?? false).ToArray();
-                res = GetSearchItems(text, search);
+                var hits = FindHits(text);
+                res = GetSearchItems(text, hits);
 
-
-                if (!search.Any(x => string.Equals(x.DisplayLower, text)))
+                if (!hits.Any(x => string.Equals(x.DisplayLower, text)))
                 {
                     SelectedItem = null;
                     SelectedIndex = -1;
                 }
                 else
                 {
-                    SelectedItem = search.FirstOrDefault(x => string.Equals(x.DisplayLower, text)).Item;
+                    SelectedItem = hits.FirstOrDefault(x => string.Equals(x.DisplayLower, text)).Item;
                 }
             }
             else if(displaySource != null)
-            {
+            {       
                 SelectedItem = null;
                 SelectedIndex = -1;
-                search = null;
                 res = GetSearchItems(displaySource);
             }
 
             return res;
+        }
+
+
+        private DisplayItem[] FindHits(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return new DisplayItem[0];
+            }
+
+            return displaySource.Where(x => x.DisplayLower?.Contains(text) ?? false).ToArray();
         }
 
         private static IEnumerable<SearchItem> GetSearchItems(string text, DisplayItem[] search)
@@ -405,11 +405,14 @@ namespace ArchiveApp.Resources
                 return item;
             });
         }
-
+        bool onlyFocus;
         private void tb_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (search != null && search.Length == 1 && search[0].DisplayLower == Text?.ToLower())
+            if (onlyFocus)
+            {
+                onlyFocus = false;
                 return;
+            }
 
             OnFocused();
         }
@@ -437,24 +440,29 @@ namespace ArchiveApp.Resources
 
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
-            var res = UpdateSearch();
-            isPaste = true;
+            notNotify.Add(nameof(Text));
+            notNotify.Add(nameof(SelectedItem));
+
+
 
             listView.Visibility = Visibility.Visible;
 
-            if (search != null && search.Length > 0)
+            if (!string.IsNullOrEmpty(Text))
             {
+                var search = FindHits(Text?.ToLower());
+                var res = GetSearchItems(Text?.ToLower(), search);
                 var other = GetSearchItems(displaySource.Except(search, new DisplayItemComparer()).ToArray());
                 listView.ItemsSource = res.Union(other, new SearchItemComparer());
             }
             else if(displaySource != null)
             {
-                listView.ItemsSource = res;
+                listView.ItemsSource = GetSearchItems(displaySource);
             }
             else
             {
                 toggle.IsChecked = false;
             }
+            onlyFocus = true;
             tb.Focus();
         }
 
@@ -462,18 +470,7 @@ namespace ArchiveApp.Resources
 
         private void ToggleButton_Unchecked(object sender, RoutedEventArgs e)
         {
-            //if(beforeColl != null)
-            //{
-            //    listView.ItemsSource = beforeColl;
-            //    listView.Visibility = Visibility.Visible;
-            //}
-            //else
-            //{
-            //    
-
-            //}
             listView.Visibility = Visibility.Collapsed;
-            //tb.Focus();
         }
 
         #region OnChangedStatic

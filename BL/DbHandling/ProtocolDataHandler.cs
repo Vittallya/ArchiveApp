@@ -21,49 +21,14 @@ namespace BL.DbHandling
 
         private void Clear(Protocol item)
         {
-
-            //if (item.Organ.Id > 0)
-            //{
-            //    item.OrganId = item.Organ.Id;
-            //    item.Organ = null;
-            //}
-            //if(item.Social.Id > 0)
-            //{
-            //    item.SocialId = item.Social.Id;
-            //    item.Social = null;
-            //}
-
-
-            //if (item.People.Nationality.Id > 0)
-            //{
-            //    item.People.NationalityId = item.People.Nationality.Id;
-            //    item.People.Nationality = null;
-            //}
-
-            //if(item.People.Party.Id > 0)
-            //{
-            //    item.People.PartyId = item.People.Party.Id;
-            //    item.People.Party = null;
-            //}
-
-            //if(item.People.Family.Id > 0)
-            //{
-            //    item.People.FamilyId = item.People.Family.Id;
-            //    item.People.Family = null;
-            //}
-
-            //if(item.People.Education.Id > 0)
-            //{
-            //    item.People.EducationId = item.People.Education.Id;
-            //    item.People.Education = null;
-            //}
-            //var people = item.People;
-
-            //if (item.People.Id > 0)
-            //{
-            //    item.PeopleId = item.People.Id;
-            //    item.People = null;
-            //}
+            if (item.OrganId.HasValue)
+            {
+                item.Organ = null;
+            }
+            if (item.SocialId.HasValue)
+            {
+                item.Social = null;
+            }
         }
 
         public bool Add(Protocol item)
@@ -83,28 +48,28 @@ namespace BL.DbHandling
 
         public async Task<IEnumerable<Protocol>> LoadItemsAsync()
         {
-            await context.Protocols.Include(p => p.People).LoadAsync();
-            return context.Protocols.Include(p => p.People);
+            await context.Protocols.
+                Include(p => p.People).ThenInclude(x => x.Natio).
+                Include(x => x.People).ThenInclude(x => x.Education).
+                Include(x => x.People).ThenInclude(x => x.FamilyType).
+                Include(x => x.People).ThenInclude(x => x.Party).
+                Include(x => x.Organ).Include(x => x.Social)
+                .LoadAsync();
+
+            return context.Protocols.
+                Include(p => p.People).ThenInclude(x => x.Natio).
+                Include(x => x.People).ThenInclude(x => x.Education).
+                Include(x => x.People).ThenInclude(x => x.FamilyType).
+                Include(x => x.People).ThenInclude(x => x.Party).
+                Include(x => x.Organ).Include(x => x.Social);
         }
 
         public bool Update(Protocol item)
         {
             try
             {
-                //invoker?.Invoke();
-
+                Clear(item);
                 context.Protocols.Update(item);
-                //await using(var context = new AppContextFactory().CreateDbContext(null))
-                //{
-                //    context.Protocols.Update(item);
-                //    await context.SaveChangesAsync();
-                //}
-
-                //invoker = () =>
-                //{
-                //    context.Entry(item.People).State = EntityState.Detached;
-                //    context.Entry(item).State = EntityState.Detached;
-                //};
                 return true;
             }
             catch(Exception e)
@@ -138,8 +103,8 @@ namespace BL.DbHandling
 
         public IEnumerable<Protocol> LoadItems()
         {
-            context.Protocols.Include(x => x.People).Load();
-            return context.Protocols.Include(x => x.People);
+            context.Protocols.Include(x => x.People).ThenInclude(x => x.Natio).Load();
+            return context.Protocols.Include(x => x.People).ThenInclude(x => x.Natio);
         }
     }
 }

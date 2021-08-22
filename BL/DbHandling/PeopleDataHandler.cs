@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AppContext = Models.AppContext;
@@ -22,10 +23,34 @@ namespace BL.DbHandling
             this.db = db;
         }
 
+        private void Clear(People item)
+        {
+            if (item.NatioId.HasValue)
+            {
+                item.Natio = null;
+            }
+
+            if (item.EducationId.HasValue)
+            {
+                item.Education = null;
+            }
+
+            if (item.PartyId.HasValue)
+            {
+                item.Party = null;
+            }
+
+            if (item.FamilyTypeId.HasValue)
+            {
+                item.FamilyType = null;
+            }
+        }
+
         public bool Add(People item)
         {
             try
             {
+                Clear(item);
                 db.Peoples.Add(item);
                 return true;
             }
@@ -46,6 +71,7 @@ namespace BL.DbHandling
         {
             try
             {
+                items.All(y => { Clear(y); return true; });
                 db.Peoples.RemoveRange(items);
                 return true;
             }
@@ -60,6 +86,7 @@ namespace BL.DbHandling
         {
             try
             {
+                Clear(item);
                 db.Peoples.Update(item);
                 return true;
             }
@@ -72,7 +99,7 @@ namespace BL.DbHandling
 
         public IEnumerable<People> LoadItems()
         {
-            return db.Peoples;
+            return db.Peoples.Include(x => x.Natio);
         }
     }
 }

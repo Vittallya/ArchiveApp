@@ -9,6 +9,6 @@ namespace Models
     public static class AllComparers
     {
         public static IEqualityComparer<Organ> GetOrganComparer => new OrganComparer();
-        public static IEqualityComparer<Nationality> GetNationalityComparer => new NationalityComparer();
+        public static IEqualityComparer<Natio> GetNationalityComparer => new NationalityComparer();
     }
 }

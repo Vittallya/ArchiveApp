@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using ArchiveApp.Abstract;
 using ArchiveApp.Locators;
+using ArchiveApp.Resources;
 using ArchiveApp.Resources.Components;
 using ArchiveApp.Services;
 using ArchiveApp.Views;
@@ -31,38 +32,6 @@ namespace ArchiveApp.ViewModels
 
         private People[] peoples;
 
-        protected override void SetupFilterFields(List<FilterOption> list)
-        {
-            var natio = dataService.GetUnits("natio");
-            var ed = dataService.GetUnits("education");
-            var party = dataService.GetUnits("party");
-            var family = dataService.GetUnits("family");
-            var soc = dataService.GetUnits("social");
-            var org = dataService.GetUnits("organs");
-
-
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Surname", "Фамилия", peoples, "Surname"));
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Name", "Имя", peoples, "Name"));
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Otchestvo", "Отчество", peoples, "Otchestvo"));
-
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Nationality", "Национальность", natio, "Value"));
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Education", "Образование", ed, "Value"));
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Party", "Партийность", party, "Value"));
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("People.Family", "Семейное положение", family, "Value"));
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("Social", "Соц. полож. на момент ареста", soc, "Value"));
-            list.Add(FilerOptionSource.GetStringVariantsOption<Protocol>("Organ", "Судебный орган", org, "Value"));
-            list.Add(FilerOptionSource.GetSelectionOption<Protocol>("People.Gender", "Пол", new string[] {"Мужской","Женский" }, 
-                () => ComboBox.SelectedIndexProperty, 
-                (value, filter) =>
-                {
-                    if(value is bool bVal && filter is int index)
-                    {
-                        return bVal == !Convert.ToBoolean(index);
-                    }
-
-                    return false;
-                }));
-        }
 
         ProtocolWindow _window;
 
@@ -109,7 +78,7 @@ namespace ArchiveApp.ViewModels
                 detailVm.Accepted += DetailVm_Accepted;
                 detailVm.Canceled += DetailVm_Canceled;
                 detailVm.SetupValidator();
-                detailVm.LoadItemsScources(peoples);
+                detailVm.LoadItemsScources(handler);
                 _window.DataContext = detailVm;
                 return detailVm;
             }
@@ -127,13 +96,20 @@ namespace ArchiveApp.ViewModels
 
         private async Task DetailVm_Accepted(ProtocolViewModel obj)
         {
-            var copy = obj.Protocol.Clone() as Protocol;
-            if(!handler.Protocols.Update(copy))
+            Protocol copy = obj.Protocol;
+
+            if (obj.IsStayActive)
             {
-                MessageBox.Show(handler.Protocols.Message);
+                copy = obj.Protocol.Clone() as Protocol;
+            }
+
+            if(!handler.UpdateProtocol(copy) || !await handler.SaveAsync())
+            {
+                MessageBox.Show(handler.Message);
+                obj.IsStayActive = true;
+                _window.Close();
                 return;
             }
-            await handler.SaveAsync();
 
             hasChanges = true;
 
@@ -203,32 +179,6 @@ namespace ArchiveApp.ViewModels
 
 
 
-        protected override ViewBase OnSetupView()
-        {
-            var grid = new GridView();
-
-            grid.Columns.Add(new GridViewColumn() { Header = "Фамилия", DisplayMemberBinding = new Binding("People.Surname") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Имя", DisplayMemberBinding = new Binding("People.Name") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Отчество", DisplayMemberBinding = new Binding("People.Otchestvo") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Пол", DisplayMemberBinding = new Binding("People.Gender") { Converter = new Converters.ConverterGenderShort() } });
-            grid.Columns.Add(new GridViewColumn() { Header = "Национальность", DisplayMemberBinding = new Binding("People.Nationality") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Место рождения", DisplayMemberBinding = new Binding("People.BirthPlace") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Год рождения", DisplayMemberBinding = new Binding("People.BirthYear")});
-            grid.Columns.Add(new GridViewColumn() { Header = "Образование", DisplayMemberBinding = new Binding("People.Education") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Партийность", DisplayMemberBinding = new Binding("People.Party")});
-            grid.Columns.Add(new GridViewColumn() { Header = "Семейное положение", DisplayMemberBinding = new Binding("People.Family")});
-            grid.Columns.Add(new GridViewColumn() { Header = "Кем работал на момент ареста", DisplayMemberBinding = new Binding("Social") });
-            grid.Columns.Add(new GridViewColumn() { Header = "По каким статьям УК РСФСР осужден", DisplayMemberBinding = new Binding("ProtocolNumber") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Судебный орган", DisplayMemberBinding = new Binding("Organ") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Год осуждения", DisplayMemberBinding = new Binding("ProtocolYear") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Приговор", DisplayMemberBinding = new Binding("Punishment") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Постановление", DisplayMemberBinding = new Binding("Resolution") });
-            grid.Columns.Add(new GridViewColumn() { Header = "Источник", DisplayMemberBinding = new Binding("Source") });
-
-
-            return grid;
-        }
-
         bool hasChanges = true;
 
         protected override async Task<IEnumerable<Protocol>> LoadItems()
@@ -240,6 +190,80 @@ namespace ArchiveApp.ViewModels
             }
 
             return a;
+        }
+
+        protected override void OnSetupView(ColumnsBuilder<Protocol> builder)
+        {
+
+
+
+            var natio = dataService.GetUnits("natio");
+            var ed = dataService.GetUnits("education");
+            var party = dataService.GetUnits("party");
+            var family = dataService.GetUnits("family");
+            var soc = dataService.GetUnits("social");
+            var org = dataService.GetUnits("organs");
+
+            Func<object, object, bool> func = (item, filterItem) =>
+            {
+                if (filterItem is IComparable cFilter)
+                {
+                    return cFilter.CompareTo(item) == 0;
+                    //todo при добавлении вспомогательных таблиц, здесь надо исправить
+                }
+                return false;
+            };
+
+            Func<object, object, bool> func1 = (value, filterValue) =>
+            {
+                if (value is IComparable cValue)
+                {
+                    return cValue.CompareTo(filterValue) == 0;
+                }
+                return false;
+            };
+
+
+            //builder.AddColumnWithDropDownListFilter(x => "People.Surname", "ФИО", peoples, TextBoxList.SelectedValueProperty, func1);
+
+
+            builder.AddColumnWithDropDownListFilter(x => "People.Surname", "Фамилия", peoples, TextBoxList.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => "People.Name", "Имя", peoples, TextBoxList.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => "People.Otchestvo", "Отчество", peoples, TextBoxList.SelectedValueProperty, func1);
+            builder.AddColumnWithFixedVariantsFilter(x => "People.Gender", "Пол", new string[] {"Мужской","Женский" }, default,
+                (value, filter) =>
+                {
+                    if (value is bool bVal && filter is int index)
+                    {
+                        return bVal == !Convert.ToBoolean(index);
+                    }
+
+                    return false;
+                }, ComboBox.SelectedIndexProperty, new Converters.ConverterGenderShort());
+
+            builder.AddColumn(x => "People.BirthYear", "Год рождения", Enumerable.Range(1850, 100).Select(x => (short)x).ToArray());
+
+            builder.AddColumnWithDropDownListFilter(x => "People.BirthPlace", "Место рождения", peoples, ComboBox.SelectedValueProperty, func, 
+                displayMebmer: "Value");
+
+            builder.AddColumnWithDropDownListFilter(x => "People.Natio.Name", "Национальность", natio, ComboBox.SelectedValueProperty, func, 
+                displayMebmer: "Value");
+            
+            builder.AddColumnWithDropDownListFilter(x => "People.Education.Name", "Образование", ed, ComboBox.SelectedValueProperty, func, 
+                displayMebmer: "Value");
+            builder.AddColumnWithDropDownListFilter(x => "People.Party.Name", "Партийность", party, ComboBox.SelectedValueProperty, func, 
+                displayMebmer: "Value");
+            builder.AddColumnWithDropDownListFilter(x => "People.FamilyType.Name", "Семейное положение", family, ComboBox.SelectedValueProperty, func, 
+                displayMebmer: "Value");
+
+            builder.AddColumnWithDropDownListFilter(x => "Social.Name", "Кем работал на момент ареста", soc, ComboBox.SelectedValueProperty, func, displayMebmer: "Value");
+            builder.AddColumnWithDropDownListFilter(x => nameof(x.ProtocolNumber), "По каким статьям УК РСФСР осужден", peoples, ComboBox.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => "Organ.Name", "Орган осуждения", org, ComboBox.SelectedValueProperty, func, displayMebmer: "Value");
+            builder.AddColumnWithDropDownListFilter(x => nameof(x.Punishment), "Приговор", peoples, ComboBox.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => nameof(x.Resolution), "Постановление", peoples, ComboBox.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => nameof(x.Source), "Источник", peoples, ComboBox.SelectedValueProperty, func1);
+
+
         }
     }
 }
