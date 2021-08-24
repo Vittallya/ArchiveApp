@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ArchiveApp.Views"
         xmlns:vm="clr-namespace:ArchiveApp.ViewModels"
-        xmlns:c="clr-namespace:ArchiveApp.Resources" 
+        xmlns:c="clr-namespace:CustomControls;assembly=CustomControls" 
+        
         d:DataContext="{d:DesignInstance Type=vm:ProtocolViewModel}"
         mc:Ignorable="d"
         Title="Протокол" Height="800" Width="580">
@@ -67,10 +68,12 @@
                                     <TextBlock 
                                     DockPanel.Dock="Top"
                                     Text="ФИО" Style="{DynamicResource TextBlock_H4}" Margin="0 0 0 5"/>
-                                    <c:TextBoxList
+                                    
+                                    
+                                    <c:TextBoxPopup
                                 IsSearchEnabled="True"
                                 ItemsSource="{Binding AllPeoples, Mode=OneWay}"
-                                SelectedItem="{Binding PeopleSearched, UpdateSourceTrigger=PropertyChanged}"                                         
+                                SelectedItem="{Binding PeopleSearched, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"                                         
                                 SelectedValuePath="Id"
                                 DisplayMemberPath="Fio"
                                 Panel.ZIndex="10"
@@ -171,7 +174,7 @@
 
                                     <DockPanel Margin="0 7 0 0"
                                Panel.ZIndex="15">
-                                        <c:TextBoxList ItemsSource="{Binding AllNatio, Mode=OneWay}" 
+                                        <c:TextBoxPopup ItemsSource="{Binding AllNatio, Mode=OneWay}" 
                                                Panel.ZIndex="25"
                                                    DisplayMemberPath="Name"
                                                    SelectedValuePath="Id"
@@ -181,7 +184,7 @@
                                                 SelectedValue="{Binding People.NatioId, UpdateSourceTrigger=PropertyChanged}" />
 
                                         <TextBlock 
-                                        Visibility="{Binding People.NatioId, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding People.Natio, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -195,17 +198,17 @@
 
                                     <DockPanel Margin="0 7 0 0"
                                Panel.ZIndex="14">
-                                        <c:TextBoxList ItemsSource="{Binding AllEducation}" 
+                                        <c:TextBoxPopup ItemsSource="{Binding AllEducation, Mode=OneWay}" 
                                                Panel.ZIndex="25"
                                                    DisplayMemberPath="Name"
                                                    SelectedValuePath="Id"
                                                Text="{Binding EducationNew.Name, UpdateSourceTrigger=PropertyChanged}"
-                                               DockPanel.Dock="Bottom"                                                   
-                                               SelectedValue="{Binding People.EducationId,UpdateSourceTrigger=PropertyChanged}"
-                                               SelectedItem="{Binding People.Education,UpdateSourceTrigger=PropertyChanged}" />
+                                               DockPanel.Dock="Bottom"    
+                                               SelectedItem="{Binding People.Education,UpdateSourceTrigger=PropertyChanged}"                                               
+                                               SelectedValue="{Binding People.EducationId,UpdateSourceTrigger=PropertyChanged}" />
 
                                         <TextBlock 
-                                        Visibility="{Binding People.EducationId, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding People.Education, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -217,7 +220,7 @@
                                     </DockPanel>
                                     <DockPanel Margin="0 7 0 0"
                                Panel.ZIndex="13">
-                                        <c:TextBoxList ItemsSource="{Binding AllParty, Mode=OneWay}" 
+                                        <c:TextBoxPopup ItemsSource="{Binding AllParty, Mode=OneWay}" 
                                                    Panel.ZIndex="25"
                                                    Text="{Binding PartyNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                    DockPanel.Dock="Bottom"
@@ -239,7 +242,7 @@
                                     </DockPanel>
                                     <DockPanel Margin="0 7 0 0"
                                Panel.ZIndex="12">
-                                        <c:TextBoxList ItemsSource="{Binding AllFamily, Mode=OneWay}" 
+                                        <c:TextBoxPopup ItemsSource="{Binding AllFamily, Mode=OneWay}" 
                                                Panel.ZIndex="25"
                                                Text="{Binding FamilyNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                DockPanel.Dock="Bottom"
@@ -250,7 +253,7 @@
                                                SelectedValue="{Binding People.FamilyTypeId,UpdateSourceTrigger=PropertyChanged}" />
 
                                         <TextBlock 
-                                        Visibility="{Binding People.FamilyTypeId, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding People.FamilyType, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -286,7 +289,7 @@
 
                 <DockPanel TextBlock.FontSize="15" Margin="0 7 0 0"
                                Panel.ZIndex="9">
-                    <c:TextBoxList ItemsSource="{Binding AllSocial, Mode=OneWay}" 
+                    <c:TextBoxPopup ItemsSource="{Binding AllSocial, Mode=OneWay}" 
                                                Text="{Binding SocialNew.Name, UpdateSourceTrigger=PropertyChanged}"
                                                DockPanel.Dock="Bottom"
                                    
@@ -296,7 +299,7 @@
                                                SelectedValue="{Binding Protocol.SocialId, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock 
-                                        Visibility="{Binding Protocol.SocialId, Converter={StaticResource NullToVisInv}}"
+                                        Visibility="{Binding Protocol.Social, Converter={StaticResource NullToVisInv}}"
                                         VerticalAlignment="Bottom"
                                         DockPanel.Dock="Right" 
                                         Text="*"/>
@@ -322,7 +325,7 @@
                            TextBlock.FontSize="15"
                                Panel.ZIndex="5">
 
-                    <c:TextBoxList ItemsSource="{Binding AllOrgans, Mode=OneWay}"
+                    <c:TextBoxPopup ItemsSource="{Binding AllOrgans, Mode=OneWay}"
                                    DockPanel.Dock="Bottom"
                                 Panel.ZIndex="5"
                                 Background="White"                                   
@@ -334,7 +337,7 @@
                                 FontSize="14"/>
 
                     <TextBlock 
-                                Visibility="{Binding Protocol.OrganId, Converter={StaticResource NullToVisInv}}"
+                                Visibility="{Binding Protocol.Organ, Converter={StaticResource NullToVisInv}}"
                                 VerticalAlignment="Center"
                                 FontSize="15"
                                 DockPanel.Dock="Right" Text="*"/>

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -21,76 +22,78 @@ namespace ArchiveApp.Resources
     /// <summary>
     /// Логика взаимодействия для TextBoxList.xaml
     /// </summary>
-    public partial class TextBoxList : UserControl
+    public partial class TextBoxList : Selector
     {
         #region D Props
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(string), typeof(TextBoxList),
             new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnTextChagedStatic));
 
-        public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
-            "ItemsSource", typeof(IEnumerable), typeof(TextBoxList),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnItemsSourceChangedStatic));
+        
+
+        //public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
+        //    "ItemsSource", typeof(IEnumerable), typeof(TextBoxList),
+        //    new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnItemsSourceChangedStatic));
 
 
-        public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register(
-            "SelectedIndex", typeof(int), typeof(TextBoxList), 
-            new FrameworkPropertyMetadata(default(int), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedIndexChangedStatic));
+        //public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register(
+        //    "SelectedIndex", typeof(int), typeof(TextBoxList), 
+        //    new FrameworkPropertyMetadata(default(int), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedIndexChangedStatic));
 
-        public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
-            "SelectedItem", typeof(object), typeof(TextBoxList), 
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedItemChangedStatic));
+        //public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(
+        //    "SelectedItem", typeof(object), typeof(TextBoxList), 
+        //    new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedItemChangedStatic));
 
-        public static readonly DependencyProperty SelectedValueProperty = DependencyProperty.Register(
-            "SelectedValue", typeof(object), typeof(TextBoxList), 
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedValueChangedStatic));
+        //public static readonly DependencyProperty SelectedValueProperty = DependencyProperty.Register(
+        //    "SelectedValue", typeof(object), typeof(TextBoxList), 
+        //    new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedValueChangedStatic));
 
-        public static readonly DependencyProperty SelectedValuePathProperty = DependencyProperty.Register(
-            "SelectedValuePath", typeof(string), typeof(TextBoxList), 
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedValuePathChangedStatic));
+        //public static readonly DependencyProperty SelectedValuePathProperty = DependencyProperty.Register(
+        //    "SelectedValuePath", typeof(string), typeof(TextBoxList), 
+        //    new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedValuePathChangedStatic));
 
-        public static readonly DependencyProperty DisplayMemberPathProperty = DependencyProperty.Register(
-            "DisplayMemberPath", typeof(string), typeof(TextBoxList),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnDisplayMemberChangedStatic));
+        //public static readonly DependencyProperty DisplayMemberPathProperty = DependencyProperty.Register(
+        //    "DisplayMemberPath", typeof(string), typeof(TextBoxList),
+        //    new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnDisplayMemberChangedStatic));
 
         public static readonly DependencyProperty IsSearchEnabledProperty = DependencyProperty.Register(
             "IsSearchEnabled", typeof(bool), typeof(TextBoxList),
             new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIsSearchEnabledChangedStatic));
         #endregion 
         #region Props
-        public IEnumerable ItemsSource
-        {
-            get => (IEnumerable)GetValue(ItemsSourceProperty);
-            set => SetValue(ItemsSourceProperty, value);
-        }
+        //public IEnumerable ItemsSource
+        //{
+        //    get => (IEnumerable)GetValue(ItemsSourceProperty);
+        //    set => SetValue(ItemsSourceProperty, value);
+        //}
 
-        public string DisplayMemberPath
-        {
-            get => GetValue(DisplayMemberPathProperty)?.ToString();
-            set => SetValue(DisplayMemberPathProperty, value);
-        }
-        public int SelectedIndex
-        {
-            get => (int)GetValue(SelectedIndexProperty);
-            set => SetValue(SelectedIndexProperty, value);
-        }
+        //public string DisplayMemberPath
+        //{
+        //    get => GetValue(DisplayMemberPathProperty)?.ToString();
+        //    set => SetValue(DisplayMemberPathProperty, value);
+        //}
+        //public int SelectedIndex
+        //{
+        //    get => (int)GetValue(SelectedIndexProperty);
+        //    set => SetValue(SelectedIndexProperty, value);
+        //}
 
-        public object SelectedItem
-        {
-            get => GetValue(SelectedItemProperty);
-            set => SetValue(SelectedItemProperty, value);
-        }
+        //public object SelectedItem
+        //{
+        //    get => GetValue(SelectedItemProperty);
+        //    set => SetValue(SelectedItemProperty, value);
+        //}
 
-        public object SelectedValue
-        {
-            get => GetValue(SelectedValueProperty);
-            set => SetValue(SelectedValueProperty, value);
-        }
-        public string SelectedValuePath
-        {
-            get => GetValue(SelectedValuePathProperty)?.ToString();
-            set => SetValue(SelectedValuePathProperty, value);
-        }
+        //public object SelectedValue
+        //{
+        //    get => GetValue(SelectedValueProperty);
+        //    set => SetValue(SelectedValueProperty, value);
+        //}
+        //public string SelectedValuePath
+        //{
+        //    get => GetValue(SelectedValuePathProperty)?.ToString();
+        //    set => SetValue(SelectedValuePathProperty, value);
+        //}
 
         public string Text
         {
@@ -106,7 +109,7 @@ namespace ArchiveApp.Resources
 
         #region OnChanged
 
-        private List<string> notNotify = new List<string>() { nameof(Text)};
+        private readonly List<string> notNotify = new List<string>() { nameof(Text)};
 
         private bool CheckNotNotify(string pName)
         {
@@ -135,7 +138,6 @@ namespace ArchiveApp.Resources
                     itemType = srcType.GetGenericArguments()[0];
                 }
 
-                SetupDisplayPath();
 
                 if (SelectedValuePath != null)
                 {
@@ -145,7 +147,7 @@ namespace ArchiveApp.Resources
 
         }
 
-        private void SetupDisplayPath()
+        private void SetupDisplaySource()
         {
             if (DisplayMemberPath != null && itemType != null)
             {
@@ -156,6 +158,7 @@ namespace ArchiveApp.Resources
                     return new DisplayItem(display, x);
 
                 })?.ToArray();
+
             }
             else
             {
@@ -165,6 +168,7 @@ namespace ArchiveApp.Resources
 
                 }).ToArray();
             }
+            displaySource = displaySource.Where(x => !string.IsNullOrEmpty(x.DisplayLower)).ToArray();
         }
 
         private void OnDisplayMebmerPathChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
@@ -176,7 +180,7 @@ namespace ArchiveApp.Resources
             else if (itemType != null)
             {
                 SetupProperty(itemType, DisplayMemberPath, ref displayProperty);
-                SetupDisplayPath();
+                SetupDisplaySource();
             }
         }
 
@@ -194,6 +198,11 @@ namespace ArchiveApp.Resources
         private void OnSelectedItemChanged(DependencyObject s, DependencyPropertyChangedEventArgs e)
         {
 
+            if (CheckNotNotify(e.Property.Name))
+            {
+                return;
+            }
+
             notNotify.Add(nameof(SelectedValue));
             if (e.NewValue == null)
             {
@@ -204,11 +213,12 @@ namespace ArchiveApp.Resources
             {
                 notNotify.Add(nameof(Text));
 
+                SelectedValue = valueProperty != null ?
+                    valueProperty.GetValue(e.NewValue) : e.NewValue;
+
                 Text = displayProperty != null ?
                     displayProperty.GetValue(e.NewValue)?.ToString() : e.NewValue?.ToString();
 
-                SelectedValue = valueProperty != null ?
-                    valueProperty.GetValue(e.NewValue) : e.NewValue;
             }
 
         }
@@ -263,7 +273,14 @@ namespace ArchiveApp.Resources
 
         public TextBoxList()
         {
-            InitializeComponent();
+            InitializeComponent();   
+        }
+
+
+        protected override void OnItemsSourceChanged(IEnumerable oldValue, IEnumerable newValue)
+        {
+            base.OnItemsSourceChanged(oldValue, newValue);
+            SetupDisplaySource();
         }
 
         private void tb_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -344,8 +361,6 @@ namespace ArchiveApp.Resources
 
             return res;
         }
-
-
         private DisplayItem[] FindHits(string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -353,7 +368,7 @@ namespace ArchiveApp.Resources
                 return new DisplayItem[0];
             }
 
-            return displaySource.Where(x => x.DisplayLower?.Contains(text) ?? false).ToArray();
+            return displaySource.Where(x => x.DisplayLower.Contains(text)).ToArray();
         }
 
         private static IEnumerable<SearchItem> GetSearchItems(string text, DisplayItem[] search)
@@ -406,7 +421,7 @@ namespace ArchiveApp.Resources
             });
         }
         bool onlyFocus;
-        private void tb_GotFocus(object sender, RoutedEventArgs e)
+        private void Tb_GotFocus(object sender, RoutedEventArgs e)
         {
             if (onlyFocus)
             {
@@ -417,7 +432,7 @@ namespace ArchiveApp.Resources
             OnFocused();
         }
 
-        private void tb_LostFocus(object sender, RoutedEventArgs e)
+        private void Tb_LostFocus(object sender, RoutedEventArgs e)
         {
             listView.Visibility = Visibility.Collapsed;
             toggle.IsChecked = false;
@@ -433,7 +448,8 @@ namespace ArchiveApp.Resources
 
         private void UpdateSelected(SearchItem item)
         {
-            SelectedItem = item.Item;
+            SelectedItem = item.Item;            
+
             toggle.IsChecked = false;
             listView.Visibility = Visibility.Collapsed;
         }
@@ -441,7 +457,7 @@ namespace ArchiveApp.Resources
         private void ToggleButton_Checked(object sender, RoutedEventArgs e)
         {
             notNotify.Add(nameof(Text));
-            notNotify.Add(nameof(SelectedItem));
+            //notNotify.Add(nameof(SelectedItem));
 
 
 

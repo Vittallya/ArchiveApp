@@ -56,7 +56,7 @@ namespace ArchiveApp.ViewModels
             if(x is FilterControl control)
             {
                 control.FilterOption.FilterControls.Remove(control);
-                control.FilterOption.OnFilterChanged(!control.IsClear);
+                control.FilterOption.OnFilterCountChanged(!control.IsClear);
             }
             OnFilterCountChanged();
         });
@@ -66,7 +66,7 @@ namespace ArchiveApp.ViewModels
             if (x is FilterOption option)
             {
                 option.FilterControls.Clear();
-                option.OnFilterChanged();
+                option.OnFilterCountChanged();
             }
             else
             {
@@ -75,10 +75,6 @@ namespace ArchiveApp.ViewModels
                     var opt = FilterOptions[i];
                     opt.FilterControls.Clear();
                 }
-            }
-            if (FilterOptions.Length > 0)
-            {
-                FilterOptions[0].OnFilterChanged();
             }
             OnFilterCountChanged();
         });

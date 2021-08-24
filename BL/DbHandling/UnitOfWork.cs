@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BL.Abstract;
@@ -12,7 +13,6 @@ namespace BL.DbHandling
     public class UnitOfWork : IDisposable
     {
         private readonly AppContext db;
-        private IEnumerable<Natio> natios;
 
         public UnitOfWork(AppContext db)
         {
@@ -45,10 +45,18 @@ namespace BL.DbHandling
             }
         }
 
+        public async Task ReloadProtocol(Protocol protocol)
+        {
+            await Protocols.LoadDataAsync(protocol);
+            await Peoples.LoadDataAsync(protocol.People);
+        }
+
         public IDataHandler<People> Peoples => peopleRepo ??= new PeopleDataHandler(db);
         public IDataHandler<Protocol> Protocols => protocolRepo ??= new ProtocolDataHandler(db);
 
+        public IEnumerable<People> PeoplesClear => db.Peoples;
 
+        public IEnumerable<Protocol> ProtocolsClear => db.Protocols;
 
         public IEnumerable<Natio> Natios => db.Set<Natio>();
         public IEnumerable<Party> Parties =>  db.Set<Party>();
@@ -58,36 +66,63 @@ namespace BL.DbHandling
         public IEnumerable<Education> Educations => db.Set<Education>();
         public string Message { get; private set; }
 
-        public bool Save()
+
+
+        public SaveChangesResult Save()
         {
             try
             {
                 db.SaveChanges();
                 db.ChangeTracker.Clear();
-                return true;
+                return new SaveChangesResult(true, null, SaveChangesResultType.Ok);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return new SaveChangesResult(false, ex, SaveChangesResultType.NeedUpdate);
             }
             catch (Exception e)
             {
                 Message = e.Message;
-                return false;
+                return new SaveChangesResult(false, e, SaveChangesResultType.Error);
             }
         }
 
-        public async Task<bool> SaveAsync()
+        public async Task<SaveChangesResult> SaveAsync()
         {
             try
             {
                 await db.SaveChangesAsync();
                 db.ChangeTracker.Clear();
-                return true;
+                return new SaveChangesResult(true, null, SaveChangesResultType.Ok);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return new SaveChangesResult(false, ex, SaveChangesResultType.NeedUpdate);
             }
             catch (Exception e)
+            {
+                Message = e.Message;
+                return new SaveChangesResult(false, e, SaveChangesResultType.Error);
+            }
+        }
+
+        public bool RemoveProtocols(Protocol[] items, bool isRemoveAll)
+        {
+            try
+            {
+                if (isRemoveAll)
+                {
+                    Peoples.Remove(items.Select(x => x.People).ToArray());
+                }
+                Protocols.Remove(items);
+                return true;
+            }
+            catch(Exception e)
             {
                 Message = e.Message;
                 return false;
             }
         }
-
 
         private bool disposed = false;
 

@@ -12,7 +12,7 @@ namespace ArchiveApp.Resources
         {
             Display = display;
             Item = item;
-            DisplayLower = display.ToLower();
+            DisplayLower = display?.ToLower();
         }
 
         internal string Display { get; }

@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using ArchiveApp.Abstract;
 using ArchiveApp.Locators;
@@ -14,14 +11,14 @@ using ArchiveApp.Resources;
 using ArchiveApp.Resources.Components;
 using ArchiveApp.Services;
 using ArchiveApp.Views;
-using BL.Abstract;
+using BL;
 using BL.DbHandling;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Models;
+using Models.Comparers;
 using MVVM_Core;
 using MVVM_Core.Validation;
-using AppContext = Models.AppContext;
+using CustomControls;
 
 namespace ArchiveApp.ViewModels
 {
@@ -94,7 +91,7 @@ namespace ArchiveApp.ViewModels
             _window?.Close();
         }
 
-        private async Task DetailVm_Accepted(ProtocolViewModel obj)
+        private async Task<bool> DetailVm_Accepted(ProtocolViewModel obj)
         {
             Protocol copy = obj.Protocol;
 
@@ -103,12 +100,39 @@ namespace ArchiveApp.ViewModels
                 copy = obj.Protocol.Clone() as Protocol;
             }
 
-            if(!handler.UpdateProtocol(copy) || !await handler.SaveAsync())
+            if(!handler.UpdateProtocol(copy) )
             {
                 MessageBox.Show(handler.Message);
                 obj.IsStayActive = true;
                 _window.Close();
-                return;
+                return false;
+            }
+            SaveChangesResult res;
+            if (!( res = await handler.SaveAsync()).Result)
+            {
+                if(res.ResultType == SaveChangesResultType.Error)
+                {
+                    MessageBox.Show(res.Exception.Message);
+                    _window.Close();
+                }
+                else if(res.ResultType == SaveChangesResultType.NeedUpdate)
+                {
+                    MessageBox.Show("Для данной записи произошло обновление другим пользователем", "Система", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    await handler.ReloadProtocol(copy);
+
+                    Items[indexOfEditable] = copy.Clone() as Protocol;
+
+                    //await Reload();
+                    if (obj.IsStayActive)
+                    {
+                        obj.OnUpdate(copy);
+                    }
+                    else
+                        _window.Close();
+                }
+
+                return false;
             }
 
             hasChanges = true;
@@ -127,7 +151,9 @@ namespace ArchiveApp.ViewModels
             if (!obj.IsStayActive)
             {
                 _window.Close();
-            }       
+                return false;
+            }
+            return true;
         }
 
         int indexOfEditable;
@@ -140,7 +166,7 @@ namespace ArchiveApp.ViewModels
             _window.Show();
         }
 
-        protected override void OnRemove(Protocol[] items)
+        protected override async void OnRemove(Protocol[] items)
         {
             try
             {
@@ -153,8 +179,8 @@ namespace ArchiveApp.ViewModels
                         return;
                 }
 
-                handler.Protocols.Remove(items, IsRemoveAll);
-                Reload();
+                handler.RemoveProtocols(items, IsRemoveAll);
+                await Reload();
                 //for (int i = 0; i < items.Length; i++)
                 //{
                 //    Items.Remove(items[i]);
@@ -195,41 +221,25 @@ namespace ArchiveApp.ViewModels
         protected override void OnSetupView(ColumnsBuilder<Protocol> builder)
         {
 
-
-
-            var natio = dataService.GetUnits("natio");
-            var ed = dataService.GetUnits("education");
-            var party = dataService.GetUnits("party");
-            var family = dataService.GetUnits("family");
-            var soc = dataService.GetUnits("social");
-            var org = dataService.GetUnits("organs");
-
-            Func<object, object, bool> func = (item, filterItem) =>
+            bool func(object item, object value, object filterItem)
             {
-                if (filterItem is IComparable cFilter)
+                if (value is IComparable cValue && filterItem is IComparable cFilter)
                 {
-                    return cFilter.CompareTo(item) == 0;
+                    return cValue.CompareTo(cFilter) == 0;
                     //todo при добавлении вспомогательных таблиц, здесь надо исправить
                 }
                 return false;
-            };
-
-            Func<object, object, bool> func1 = (value, filterValue) =>
-            {
-                if (value is IComparable cValue)
-                {
-                    return cValue.CompareTo(filterValue) == 0;
-                }
-                return false;
-            };
+            }
 
 
             //builder.AddColumnWithDropDownListFilter(x => "People.Surname", "ФИО", peoples, TextBoxList.SelectedValueProperty, func1);
 
+            IEnumerable<People> getterPeople() => handler.PeoplesClear;
+            IEnumerable<Protocol> getterProtocol() => handler.ProtocolsClear;
 
-            builder.AddColumnWithDropDownListFilter(x => "People.Surname", "Фамилия", peoples, TextBoxList.SelectedValueProperty, func1);
-            builder.AddColumnWithDropDownListFilter(x => "People.Name", "Имя", peoples, TextBoxList.SelectedValueProperty, func1);
-            builder.AddColumnWithDropDownListFilter(x => "People.Otchestvo", "Отчество", peoples, TextBoxList.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => "People.Surname", "Фамилия", () => getterPeople().Distinct(new GenericComparer<People>(x => x.Surname)).ToArray(), ComboBox.SelectedValueProperty, func);
+            builder.AddColumnWithDropDownListFilter(x => "People.Name", "Имя", () => getterPeople().Distinct(new GenericComparer<People>(x => x.Name)).ToArray(), ComboBox.SelectedValueProperty, func);
+            builder.AddColumnWithDropDownListFilter(x => "People.Otchestvo", "Отчество", () => getterPeople().Distinct(new GenericComparer<People>(x => x.Otchestvo)).ToArray(), ComboBox.SelectedValueProperty, func);
             builder.AddColumnWithFixedVariantsFilter(x => "People.Gender", "Пол", new string[] {"Мужской","Женский" }, default,
                 (value, filter) =>
                 {
@@ -243,25 +253,38 @@ namespace ArchiveApp.ViewModels
 
             builder.AddColumn(x => "People.BirthYear", "Год рождения", Enumerable.Range(1850, 100).Select(x => (short)x).ToArray());
 
-            builder.AddColumnWithDropDownListFilter(x => "People.BirthPlace", "Место рождения", peoples, ComboBox.SelectedValueProperty, func, 
-                displayMebmer: "Value");
+            builder.AddColumnWithDropDownListFilter(x => "People.BirthPlace", 
+                "Место рождения",
+                () => getterPeople().Distinct(new GenericComparer<People>(x => x.BirthPlace)).ToArray(),
+                ComboBox.SelectedValueProperty,  func);
 
-            builder.AddColumnWithDropDownListFilter(x => "People.Natio.Name", "Национальность", natio, ComboBox.SelectedValueProperty, func, 
-                displayMebmer: "Value");
+            builder.AddColumnWithDropDownListFilter(x => "People.Natio.Name", "Национальность", () => handler.Natios.Intersect(handler.Peoples.LoadItems(x => x.Natio).Select(x => x.Natio), new GenericComparer<Natio>(y => y.Id)).ToArray(),
+                ComboBox.SelectedValueProperty, 
+                (item, value, filter) => (item as Protocol)?.People?.NatioId.Value == short.Parse(filter.ToString()), valuePath: "Id");
             
-            builder.AddColumnWithDropDownListFilter(x => "People.Education.Name", "Образование", ed, ComboBox.SelectedValueProperty, func, 
-                displayMebmer: "Value");
-            builder.AddColumnWithDropDownListFilter(x => "People.Party.Name", "Партийность", party, ComboBox.SelectedValueProperty, func, 
-                displayMebmer: "Value");
-            builder.AddColumnWithDropDownListFilter(x => "People.FamilyType.Name", "Семейное положение", family, ComboBox.SelectedValueProperty, func, 
-                displayMebmer: "Value");
+            builder.AddColumnWithDropDownListFilter(x => "People.Education.Name", "Образование", () => handler.Educations.Intersect(handler.Peoples.LoadItems(x => x.Education).Select(x => x.Education), new GenericComparer<Education>(y => y.Id)).ToArray(),
+                ComboBox.SelectedValueProperty,
+                (item, value, filter) => (item as Protocol)?.People?.EducationId.Value == short.Parse(filter.ToString()), valuePath: "Id");
+            builder.AddColumnWithDropDownListFilter(x => "People.Party.Name", "Партийность", () => handler.Parties.Intersect(handler.Peoples.LoadItems(y => y.Party).Select(y => y.Party), new GenericComparer<Party>(y => y.Id)).ToArray(),
+                ComboBox.SelectedValueProperty, 
+                (item, value, filter) => (item as Protocol)?.People?.PartyId.Value == short.Parse(filter.ToString()), valuePath: "Id");
+            builder.AddColumnWithDropDownListFilter(x => "People.FamilyType.Name", "Семейное положение", 
+                () => handler.FamilyTypes.Intersect(handler.Peoples.LoadItems(y => y.FamilyType).Select(y => y.FamilyType), new GenericComparer<FamilyType>(y => y.Id)).ToArray(), ComboBox.SelectedValueProperty, 
+                (item, value, filter) => (item as Protocol)?.People?.FamilyTypeId.Value == short.Parse(filter.ToString()),valuePath: "Id");
 
-            builder.AddColumnWithDropDownListFilter(x => "Social.Name", "Кем работал на момент ареста", soc, ComboBox.SelectedValueProperty, func, displayMebmer: "Value");
-            builder.AddColumnWithDropDownListFilter(x => nameof(x.ProtocolNumber), "По каким статьям УК РСФСР осужден", peoples, ComboBox.SelectedValueProperty, func1);
-            builder.AddColumnWithDropDownListFilter(x => "Organ.Name", "Орган осуждения", org, ComboBox.SelectedValueProperty, func, displayMebmer: "Value");
-            builder.AddColumnWithDropDownListFilter(x => nameof(x.Punishment), "Приговор", peoples, ComboBox.SelectedValueProperty, func1);
-            builder.AddColumnWithDropDownListFilter(x => nameof(x.Resolution), "Постановление", peoples, ComboBox.SelectedValueProperty, func1);
-            builder.AddColumnWithDropDownListFilter(x => nameof(x.Source), "Источник", peoples, ComboBox.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => "Social.Name", "Кем работал на момент ареста", () => handler.Socials.Intersect(handler.Protocols.LoadItems(y => y.Social).Select(y => y.Social), new GenericComparer<Social>(y => y.Id)).ToArray(),
+                ComboBox.SelectedValueProperty, 
+                (item, value, filter) => (item as Protocol)?.SocialId.Value == short.Parse(filter.ToString()),valuePath: "Id");
+
+            //builder.AddColumnWithDropDownListFilter(x => nameof(x.ProtocolNumber), "По каким статьям УК РСФСР осужден", () => handler.Parties.ToArray(), ComboBox.SelectedValueProperty, func1);
+            builder.AddColumnWithDropDownListFilter(x => "Organ.Name", "Орган осуждения", 
+                () => handler.Organs.Intersect(handler.Protocols.LoadItems(y => y.Organ).Select(y => y.Organ), new GenericComparer<Organ>(y => y.Id)).ToArray(), 
+                ComboBox.SelectedValueProperty, 
+                (item, value, filter) => (item as Protocol)?.OrganId.Value == short.Parse(filter.ToString()), valuePath: "Id");
+
+            builder.AddColumnWithDropDownListFilter(x => nameof(x.Punishment), "Приговор", () => getterProtocol().Distinct(new GenericComparer<Protocol>(p => p.Punishment)).ToArray(), ComboBox.SelectedValueProperty, func);
+            builder.AddColumnWithDropDownListFilter(x => nameof(x.Resolution), "Постановление", () => getterProtocol().Distinct(new GenericComparer<Protocol>(p => p.Resolution)).ToArray(), ComboBox.SelectedValueProperty, func);
+            builder.AddColumnWithDropDownListFilter(x => nameof(x.Source), "Источник", () => getterProtocol().Distinct(new GenericComparer<Protocol>(p => p.Source)).ToArray(), ComboBox.SelectedValueProperty, func);
 
 
         }

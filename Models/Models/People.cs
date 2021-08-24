@@ -47,6 +47,10 @@ namespace Models
         public Party Party { get; set; }
         public Education Education { get; set; }
         public FamilyType FamilyType { get; set; }
+
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
     }
     public class Natio
     {

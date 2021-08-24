@@ -4,6 +4,7 @@ using Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using AppContext = Models.AppContext;
@@ -80,20 +81,15 @@ namespace BL.DbHandling
         }
 
 
-        public bool Remove(Protocol[] items, bool isRemoveAll)
+        public bool Remove(Protocol[] items)
         {
             //using (var context = new AppContextFactory().CreateDbContext(null))
             //{
-                if (isRemoveAll)
+                items.All(x =>
                 {
-                    context.RemoveRange(items.Select(x => x.People).ToArray());
-                }
-
-                items = items.Select(x =>
-                {
-                    x.People = null;
-                    return x;
-                }).ToArray();
+                    Clear(x);
+                    return true;
+                });
 
                 context.Protocols.RemoveRange(items);
                 context.SaveChanges();
@@ -105,6 +101,35 @@ namespace BL.DbHandling
         {
             context.Protocols.Include(x => x.People).ThenInclude(x => x.Natio).Load();
             return context.Protocols.Include(x => x.People).ThenInclude(x => x.Natio);
+        }
+
+        public async Task LoadDataAsync(Protocol item)
+        {
+            context.ChangeTracker.Clear();
+            await context.Entry(item).ReloadAsync();
+            context.Entry(item).State = EntityState.Detached;
+        }
+
+        public void LoadData(Protocol item)
+        {
+            context.ChangeTracker.Clear();            
+            context.Entry(item).Reload();
+            context.Entry(item).State = EntityState.Detached;
+        }
+
+        public Protocol Find(object id)
+        {
+            return context.Protocols.Find(id);
+        }
+
+        public async Task<Protocol> FindAsync(object id)
+        {
+            return await context.Protocols.FindAsync(id);
+        }
+
+        public IEnumerable<Protocol> LoadItems(Expression< Func<Protocol, object>> include)
+        {
+            return context.Protocols.Include(include);
         }
     }
 }

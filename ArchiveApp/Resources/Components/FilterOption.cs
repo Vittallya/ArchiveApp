@@ -19,6 +19,7 @@ namespace ArchiveApp.Resources.Components
         public Type PropertyType { get; }
 
         public event Action<IFilterOption> FilterValueChanged;
+        public bool IsClear { get; }
         public ObservableCollection<FilterControl> FilterControls { get; }
 
         public FilterControl GetFilterControl();
@@ -39,7 +40,9 @@ namespace ArchiveApp.Resources.Components
 
         private FilterControl[] actualFilters;
 
-        public void OnFilterChanged(bool update = true)
+        public bool IsClear => FilterControls == null || FilterControls.Count == 0 || FilterControls.All(x => x.IsClear);
+
+        public void OnFilterCountChanged(bool update = true)
         {
             actualFilters = FilterControls.Where(x => !x.IsClear).ToArray();
             if(update)
@@ -68,7 +71,7 @@ namespace ArchiveApp.Resources.Components
             {
                 isAllConfition = value;
                 OnPropertyChanged();
-                OnFilterChanged();
+                OnFilterCountChanged();
             } 
         }
 
@@ -115,7 +118,7 @@ namespace ArchiveApp.Resources.Components
         }
 
         public static FilterOption GetStringVariantsOption<T>(string property, 
-            string header, Array variants, string displayMember, string valuePath, DependencyProperty dProp, Func<object, object, bool> func)
+            string header, Func<Array> variantsGetter, string displayMember, string valuePath, DependencyProperty dProp, Func<object, object, object, bool> func)
         {
             Type type = typeof(T);
 
@@ -125,7 +128,7 @@ namespace ArchiveApp.Resources.Components
 
 
             FilterOption filter = new FilterOption(header, valueGetter, pType);
-            filter.FilterControlGetter = () => new StringFilterControl(filter, variants, displayMember, valuePath, dProp, func);
+            filter.FilterControlGetter = () => new StringFilterControl(filter, variantsGetter(), displayMember, valuePath, dProp, func);
 
             return filter;
         }

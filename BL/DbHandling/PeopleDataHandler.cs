@@ -4,6 +4,7 @@ using Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using AppContext = Models.AppContext;
@@ -67,7 +68,7 @@ namespace BL.DbHandling
             return db.Peoples;
         }
 
-        public bool Remove(People[] items, bool isRemoveAll)
+        public bool Remove(People[] items)
         {
             try
             {
@@ -99,7 +100,36 @@ namespace BL.DbHandling
 
         public IEnumerable<People> LoadItems()
         {
-            return db.Peoples.Include(x => x.Natio);
+            return db.Peoples;
+        }
+
+        public async Task LoadDataAsync(People item)
+        {
+            db.ChangeTracker.Clear();
+            await db.Entry(item).ReloadAsync();
+            db.Entry(item).State = EntityState.Detached;
+        }
+
+        public void LoadData(People item)
+        {
+            db.ChangeTracker.Clear();
+            db.Entry(item).Reload();
+            db.Entry(item).State = EntityState.Detached;
+        }
+
+        public People Find(object id)
+        {
+            return db.Peoples.Find(id);
+        }
+
+        public async Task<People> FindAsync(object id)
+        {
+            return await db.Peoples.FindAsync(id);
+        }
+
+        public IEnumerable<People> LoadItems(Expression<Func<People, object>> include)
+        {
+            return db.Peoples.Include(include);
         }
     }
 }

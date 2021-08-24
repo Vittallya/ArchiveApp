@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Client\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 

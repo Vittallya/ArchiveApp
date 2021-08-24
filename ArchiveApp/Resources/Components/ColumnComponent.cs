@@ -9,14 +9,25 @@ namespace ArchiveApp.Resources.Components
 {
     public class ColumnComponent
     {
-        private GridViewColumn column;
-
         public ColumnComponent(object header, string bindingProperty, IValueConverter converter = null, string stringFormat = null)
         {
             Header = header;
             BindingProperty = bindingProperty;
             Converter = converter;
             StringFormat = stringFormat;
+
+            Column = new GridViewColumn()
+            {
+                Header = Header,
+                DisplayMemberBinding = new Binding(BindingProperty) 
+                { 
+                    Converter = Converter, 
+                    StringFormat = StringFormat 
+                }
+
+            };
+            IsVisible = true;
+
         }
 
         public FilterOption FilterOption { get; }
@@ -37,11 +48,7 @@ namespace ArchiveApp.Resources.Components
         public string StringFormat { get; }
 
 
-        public GridViewColumn Column => column ??= new GridViewColumn()
-        {
-            Header = Header,
-            DisplayMemberBinding = new Binding(BindingProperty) { Converter = Converter, StringFormat = StringFormat }
-        };
+        public GridViewColumn Column { get; }
     }
 
 
@@ -111,14 +118,19 @@ namespace ArchiveApp.Resources.Components
         }
 
         public void AddColumnWithDropDownListFilter(Func<T, string> propGetter, string header, 
-            Array itemsSource, DependencyProperty dProp, Func<object, object, bool> itemValueFunc,
+            Func<Array> itemsSourceGetter, DependencyProperty dProp, Func<object, object, object, bool> itemValueFunc,
             IValueConverter converter = null, string stringFormat = null, string displayMebmer = default, string valuePath = default)
         {
             string property = propGetter(default);
 
-            if (displayMebmer == null && valuePath == null)
+            if (displayMebmer == null)
             {
-                displayMebmer = property;
+                if (property.Contains('.'))
+                {
+                    displayMebmer = property.Split('.')[^1];
+                }
+                else
+                    displayMebmer = property;
             }
             if (valuePath == null)
             {
@@ -126,7 +138,7 @@ namespace ArchiveApp.Resources.Components
             }
 
 
-            ColumnComponent col = new ColumnComponent(header, property, FilterOptionSource.GetStringVariantsOption<T>(property, header, itemsSource, displayMebmer, valuePath, dProp, itemValueFunc), converter, stringFormat);
+            ColumnComponent col = new ColumnComponent(header, property, FilterOptionSource.GetStringVariantsOption<T>(property, header, itemsSourceGetter, displayMebmer, valuePath, dProp, itemValueFunc), converter, stringFormat);
             columns.Add(col);
         }
 

@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Resources\Xaml\TextBoxList.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Resources\Xaml\TextBoxList.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -50,6 +58,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="CustomControls">
+      <HintPath>..\..\..\WindowsFormsApp1\CustomControls\bin\Debug\CustomControls.dll</HintPath>
+    </Reference>
     <Reference Include="MVVM_Core">
       <HintPath>bin\Debug\netcoreapp3.1\MVVM_Core.dll</HintPath>
     </Reference>

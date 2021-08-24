@@ -44,7 +44,7 @@ namespace ArchiveApp.Resources.Components
         protected void OnFilterValueChanged()
         {
             OnPrepare();
-            FilterOption.OnFilterChanged();
+            FilterOption.OnFilterCountChanged();
         }
 
         protected virtual void OnPrepare() { }

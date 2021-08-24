@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models;
 
 namespace Models.Migrations
 {
     [DbContext(typeof(AppContext))]
-    partial class AppContextModelSnapshot : ModelSnapshot
+    [Migration("20210823100733_TimeStamp")]
+    partial class TimeStamp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,42 +222,23 @@ namespace Models.Migrations
                     b.ToTable("Social");
                 });
 
-            modelBuilder.Entity("Models.Update", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTimeOffset>("LastUpdate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Updates");
-                });
-
             modelBuilder.Entity("Models.People", b =>
                 {
                     b.HasOne("Models.Education", "Education")
                         .WithMany()
-                        .HasForeignKey("EducationId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("EducationId");
 
                     b.HasOne("Models.FamilyType", "FamilyType")
                         .WithMany()
-                        .HasForeignKey("FamilyTypeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("FamilyTypeId");
 
                     b.HasOne("Models.Natio", "Natio")
                         .WithMany()
-                        .HasForeignKey("NatioId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("NatioId");
 
                     b.HasOne("Models.Party", "Party")
                         .WithMany()
-                        .HasForeignKey("PartyId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("PartyId");
 
                     b.Navigation("Education");
 
@@ -270,8 +253,7 @@ namespace Models.Migrations
                 {
                     b.HasOne("Models.Organ", "Organ")
                         .WithMany()
-                        .HasForeignKey("OrganId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("OrganId");
 
                     b.HasOne("Models.People", "People")
                         .WithMany()
@@ -281,8 +263,7 @@ namespace Models.Migrations
 
                     b.HasOne("Models.Social", "Social")
                         .WithMany()
-                        .HasForeignKey("SocialId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("SocialId");
 
                     b.Navigation("Organ");
 

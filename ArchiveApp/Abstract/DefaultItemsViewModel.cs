@@ -57,10 +57,10 @@ namespace ArchiveApp.Abstract
         public ViewBase View { get; private set; }
 
 
-        private void Init()
+        private async void Init()
         {
             InitView();
-            Reload();
+            await Reload();
         }
 
         private void InitView()
@@ -75,17 +75,7 @@ namespace ArchiveApp.Abstract
             for (int i = 0; i < allColumns.Length; i++)
             {
                 var col = allColumns[i];
-                gridView.Columns.Add(new GridViewColumn()
-                {
-                    Header = col.Header,
-                    DisplayMemberBinding = new Binding(col.BindingProperty)
-                    {
-                        Converter = col.Converter,
-                        StringFormat = col.StringFormat,
-                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-                    },
-                    
-                });
+                gridView.Columns.Add(col.Column);
             }
 
 
@@ -148,7 +138,7 @@ namespace ArchiveApp.Abstract
                 OnRemove(SelectedItems.OfType<T>().ToArray());
             }
         }
-        protected async void Reload()
+        protected async Task Reload()
         {
             LoadingAnimation = true;
             //Items = new ObservableCollection<T>(await OnLoadItems(appContext));
@@ -179,7 +169,7 @@ namespace ArchiveApp.Abstract
 
         public ICommand RemoveCommand => removeCommand ??= new Command(x => Remove(), y => SelectedItem != null);
 
-        public ICommand UpdateCommand => updateCommand ??= new Command(x => Reload());
+        public ICommand UpdateCommand => updateCommand ??= new CommandAsync(async x => await Reload());
 
         #endregion
 
@@ -188,6 +178,7 @@ namespace ArchiveApp.Abstract
         {
             ItemsView = CollectionViewSource.GetDefaultView(Items);
             RefreshGrouping();
+            RefreshFilter();
         }
 
         protected virtual void ItemSelected(T item) { }
@@ -218,58 +209,56 @@ namespace ArchiveApp.Abstract
         public ICommand ColumnsCommand => columnsCommand ??= new Command(x =>
         {
             //todo Разобраться со столбцами
-            //if (!CheckWindow<ColumnsWindow>())
-            //{
+            if (!CheckWindow<ColumnsWindow>())
+            {
 
-            //    var vm = new FieldsViewModel();
-            //    vm.SetupColumns(actualColumns.
-            //        Select(x => new ColumnComponent { Header = x.Header, IsVisible = true, Column = x }).
-            //        Union(removedColumns.Select(y => new ColumnComponent { Header = y.Header, IsVisible = false, Column = y })));
+                var vm = new FieldsViewModel();
+                vm.SetupColumns(allColumns);
 
+                vm.ChangeVisible = new Command(v =>
+                {
+                    if (v is ColumnComponent comp)
+                    {
+                        if (comp.IsVisible)
+                        {
+                            actualColumns.Add(comp.Column);
+                        }
+                        else
+                        {
+                            actualColumns.Remove(comp.Column);
+                        }
+                    }
+                });
 
+                vm.HideAllColumns = new Command(v =>
+                {
+                    for (int i = 0; i < allColumns.Length; i++)
+                    {
+                        allColumns[i].IsVisible = false;
+                    }
 
-            //    vm.ChangeVisible = new Command(v =>
-            //    {
-            //        if (v is ColumnComponent comp)
-            //        {
-            //            if (comp.IsVisible)
-            //            {
-            //                actualColumns.Add(comp.Column);
-            //                removedColumns.Remove(comp.Column);
-            //            }
-            //            else
-            //            {
-            //                actualColumns.Remove(comp.Column);
-            //                removedColumns.Add(comp.Column);
-            //            }
-            //        }
-            //    });
+                    actualColumns.Clear();
+                    vm.SetupVisibleForAll(false);
+                });
 
-            //    vm.HideAllColumns = new Command(v =>
-            //    {
-            //        removedColumns.AddRange(actualColumns);
-            //        actualColumns.Clear();
-            //        vm.SetupVisibleForAll(false);
-            //    });
+                vm.ShowAllColumns = new Command(v =>
+                {
+                    for (int i = 0; i < allColumns.Length; i++)
+                    {
+                        allColumns[i].IsVisible = true;
+                        actualColumns.Add(allColumns[i].Column);
+                    }
 
-            //    vm.ShowAllColumns = new Command(v =>
-            //    {
-            //        foreach (var col in removedColumns)
-            //        {
-            //            actualColumns.Add(col);
-            //        }
+                    vm.SetupVisibleForAll(true);
+                });
 
-            //        removedColumns.Clear();
-            //        vm.SetupVisibleForAll(true);
-            //    });
-
-            //    var window = GetNewWindow<ColumnsWindow>(vm);
-            //    window.Show();
-            //}
-            //else
-            //{
-            //    Focus<ColumnsWindow>();
-            //}
+                var window = GetNewWindow<ColumnsWindow>(vm);
+                window.Show();
+            }
+            else
+            {
+                Focus<ColumnsWindow>();
+            }
         });
 
         protected abstract void OnSetupView(ColumnsBuilder<T> builder);
@@ -370,7 +359,7 @@ namespace ArchiveApp.Abstract
 
         private void Filter_FilterValueChanged(IFilterOption obj)
         {
-            if (obj.FilterControls.All(c => c.IsClear))
+            if (obj.IsClear)
             {
                 actualFilters.Remove(obj);
             }
@@ -378,17 +367,27 @@ namespace ArchiveApp.Abstract
             {
                 actualFilters.Add(obj);
             }
+            RefreshFilter();
+        }
+
+        public void RefreshFilter()
+        {
             ItemsView.Filter = item =>
             {
                 return actualFilters.All(f => f.Filter(item));
             };
 
-            //RefreshCollectionView();
         }
 
         private void Vm_FilterCountChanged(int obj)
         {
             FiltersCount = obj;
+
+            if(FiltersCount == 0)
+            {
+                ItemsView.Filter = null;
+                actualFilters.Clear();
+            }
         }
 
         public ICommand ShowFiltersWindowCommand => showFiltersWindowCommand ??= new Command(x =>

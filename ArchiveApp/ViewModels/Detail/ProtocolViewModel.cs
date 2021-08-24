@@ -81,32 +81,42 @@ namespace ArchiveApp.ViewModels
         
         private void CheckOuter()
         {
-            if (!People.NatioId.HasValue)
+            if (People.Natio == null)
             {
                 People.Natio = NatioNew;
             }
-            if (!People.EducationId.HasValue)
+            if (People.Education == null)
             {
                 People.Education = EducationNew;
             }
-            if (!People.PartyId.HasValue)
+            if (People.Party == null)
             {
                 People.Party = PartyNew;
             }
-            if (!People.FamilyTypeId.HasValue)
+            if (People.FamilyType == null)
             {
                 People.FamilyType = FamilyNew;
             }
-            if (!Protocol.OrganId.HasValue)
+            if (Protocol.Organ == null)
             {
                 Protocol.Organ = OrganNew;
             }
-            if (!Protocol.SocialId.HasValue)
+            if (Protocol.Social == null)
             {
                 Protocol.Social = SocialNew;
             }
         }
         
+        private T[] CheckUpdateSource<T>(bool hasValue, T[] data, T newRecord)
+        {
+            if (!hasValue)
+            {
+                return UpdateDataSource(data, newRecord);
+            }
+            else
+                return data;
+        }
+
         private async void OnAccept()
         {
             ErrorMessage = null;
@@ -118,42 +128,55 @@ namespace ArchiveApp.ViewModels
             CheckOuter();
 
             Protocol.People = People;
-            await Accepted?.Invoke(this);
 
-            if (IsStayActive)
+
+            if (!await Accepted?.Invoke(this))
+                return;
+
+            AllNatio = CheckUpdateSource(People.NatioId.HasValue, AllNatio, NatioNew);
+            AllEducation = CheckUpdateSource(People.EducationId.HasValue, AllEducation, EducationNew);
+            AllParty = CheckUpdateSource(People.PartyId.HasValue, AllParty, PartyNew);
+            AllFamily = CheckUpdateSource(People.FamilyTypeId.HasValue, AllFamily, FamilyNew);
+            AllSocial = CheckUpdateSource(Protocol.SocialId.HasValue, AllSocial, SocialNew);
+            AllOrgans = CheckUpdateSource(Protocol.OrganId.HasValue, AllOrgans, OrganNew);
+
+            if (IsNewPeopleRecord)
             {
-                if (!People.NatioId.HasValue)
-                {
-                    AllNatio = UpdateDataSource(AllNatio, NatioNew);
-                }
-                if (IsNewPeopleRecord)
-                {
-                    AllPeoples = UpdateDataSource(AllPeoples, People);
-                    People = null;
-                }
+                AllPeoples = UpdateDataSource(AllPeoples, People);
+                People = null;
+            }
 
-                if (IsEdit)
-                {
-                    NatioNew = new Natio { Name = NatioNew.Name };
-                    EducationNew = new Education { Name = EducationNew.Name };
-                    PartyNew = new Party { Name = PartyNew.Name };
-                    FamilyNew = new FamilyType { Name = FamilyNew.Name };
-                    OrganNew = new Organ { Name = OrganNew.Name };
-                    SocialNew = new Social { Name = SocialNew.Name };
-                    OnEdit(Protocol);
-                }
-                else
-                {
-                    NatioNew = new Natio();
-                    EducationNew = new Education();
-                    PartyNew = new Party();
-                    FamilyNew = new FamilyType();
-                    OrganNew = new Organ();
-                    SocialNew = new Social();
-                    OnAdd();
-                }
+            if (IsEdit)
+            {
+                NatioNew = new Natio { Name = NatioNew.Name };
+                EducationNew = new Education { Name = EducationNew.Name };
+                PartyNew = new Party { Name = PartyNew.Name };
+                FamilyNew = new FamilyType { Name = FamilyNew.Name };
+                OrganNew = new Organ { Name = OrganNew.Name };
+                SocialNew = new Social { Name = SocialNew.Name };
+                OnEdit(Protocol);
+            }
+            else
+            {
+                NatioNew = new Natio();
+                EducationNew = new Education();
+                PartyNew = new Party();
+                FamilyNew = new FamilyType();
+                OrganNew = new Organ();
+                SocialNew = new Social();
+                OnAdd();
             }
             
+        }
+
+        internal void OnUpdate(Protocol protocol)
+        {
+            Protocol = protocol.Clone() as Protocol;
+            if (!IsNewPeopleRecord)
+            {
+                PeopleUpdate(Protocol.People);
+            }
+            Protocol.People = null;
         }
 
         private T[] UpdateDataSource<T>(T[] items, T newItem)
@@ -172,7 +195,7 @@ namespace ArchiveApp.ViewModels
 
         #region Команды
 
-        public event Func<ProtocolViewModel, Task> Accepted;
+        public event Func<ProtocolViewModel, Task<bool>> Accepted;
         public event Action<ProtocolViewModel> Canceled;
 
         private ICommand changeToNewRecordCommand;

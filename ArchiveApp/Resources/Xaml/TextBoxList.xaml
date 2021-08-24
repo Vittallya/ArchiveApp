@@ -35,8 +35,8 @@
             <TextBox  
                     Text="{Binding ElementName=tbList, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PreviewKeyDown="tb_PreviewKeyDown"
-                    GotFocus="tb_GotFocus"
-                    LostFocus="tb_LostFocus"
+                    GotFocus="Tb_GotFocus"
+                    LostFocus="Tb_LostFocus"
                     
                     Focusable="True"        
                     x:Name="tb"/>

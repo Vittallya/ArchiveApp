@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using CustomControls;
 
 namespace ArchiveApp.Resources.Components
 {
@@ -19,7 +21,7 @@ namespace ArchiveApp.Resources.Components
         }
 
         public StringFilterControl(FilterOption filterOption,
-            Array itemsSource, string displayMember, string valuePath, DependencyProperty toProperty, Func<object, object, bool> func) : this(filterOption)
+            Array itemsSource, string displayMember, string valuePath, DependencyProperty toProperty, Func<object, object, object, bool> func) : this(filterOption)
         {
             IsDropDownList = true;
             ItemsSource = itemsSource;
@@ -27,7 +29,7 @@ namespace ArchiveApp.Resources.Components
             ValuePath = valuePath;
             ToProperty = toProperty;
             this.func = func;
-            Control = new TextBoxList
+            Control = new TextBoxPopup
             {
                 ItemsSource = ItemsSource,
                 DisplayMemberPath = DisplayMember,
@@ -35,7 +37,7 @@ namespace ArchiveApp.Resources.Components
                 DataContext = this,
             };
 
-            Control.SetBinding(TextBoxList.TextProperty, new Binding("FilterValue") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+            Control.SetBinding(TextBoxPopup.TextProperty, new Binding("FilterValue") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
             //Control.SetBinding(TextBoxList.SelectedItemProperty, new Binding("SelectedItem") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
         }
 
@@ -45,18 +47,16 @@ namespace ArchiveApp.Resources.Components
         }
 
         Predicate<object> predicate;
-        private readonly Func<object, object, bool> func;
+        private readonly Func<object, object, object, bool> func;
 
         protected override void OnPrepare()
         {
-            //if (SelectedItem != null)
-            //    predicate = value => func(value, Control.GetValue(ToProperty));
 
             var obj = Control.GetValue(ToProperty);
 
             if(func != null && obj != null)
             {
-                predicate = value => func(FilterOption.OriginItem, obj);
+                predicate = value => func(FilterOption.OriginItem, value, obj);
             }
             else if (FilterValue is string filterValue)
             {

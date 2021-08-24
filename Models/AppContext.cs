@@ -16,11 +16,18 @@ namespace Models
 
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {            
+        {
+            modelBuilder.Entity<People>().HasOne(x => x.Natio).WithMany().OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<People>().HasOne(x => x.Education).WithMany().OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<People>().HasOne(x => x.Party).WithMany().OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<People>().HasOne(x => x.FamilyType).WithMany().OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Protocol>().HasOne(x => x.Social).WithMany().OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Protocol>().HasOne(x => x.Organ).WithMany().OnDelete(DeleteBehavior.SetNull);
         }
 
         public DbSet<Protocol> Protocols => Set<Protocol>();
         public DbSet<People> Peoples => Set<People>();
+        public DbSet<Update> Updates => Set<Update>();
 
     }
 }

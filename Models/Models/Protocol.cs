@@ -40,6 +40,8 @@ namespace Models
 
         public short? SocialId { get; set; }
         public short? OrganId { get; set; }
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
     }
 
     public class Social
